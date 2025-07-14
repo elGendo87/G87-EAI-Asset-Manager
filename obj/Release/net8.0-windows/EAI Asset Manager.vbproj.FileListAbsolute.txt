@@ -1,0 +1,19 @@
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\EAI Asset Manager.exe
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\EAI Asset Manager.deps.json
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\EAI Asset Manager.runtimeconfig.json
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\EAI Asset Manager.dll
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\EAI Asset Manager.pdb
+F:\VB .NET FEDE\Asset Manager\Asset Manager\bin\Release\net8.0-windows\Newtonsoft.Json.dll
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.vbproj.AssemblyReference.cache
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\Asset_Manager.Frm_Main.resources
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.vbproj.GenerateResource.cache
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.GeneratedMSBuildEditorConfig.editorconfig
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.AssemblyInfoInputs.cache
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.AssemblyInfo.vb
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.vbproj.CoreCompileInputs.cache
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asse.2D781834.Up2Date
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.dll
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\refint\EAI Asset Manager.dll
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.pdb
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\EAI Asset Manager.genruntimeconfig.cache
+F:\VB .NET FEDE\Asset Manager\Asset Manager\obj\Release\net8.0-windows\ref\EAI Asset Manager.dll
