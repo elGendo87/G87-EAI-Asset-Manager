@@ -43,7 +43,14 @@ Public Class Frm_Main
             Dim modRootPath As String = selectedMod.Value.ToString()
             ModScanner.currentModPath = modRootPath
 
+            ' NEW: Clear asset type and category path before loading new ones
+            ' This forces RestoreSelections to pick the first available for the new mod
+            ModScanner.currentAssetTypePath = ""
+            ModScanner.currentCategoryPath = ""
+            ModScanner.currentSelectedAssetTag = "" ' Also clear asset selection
+
             LoadAssetTypes(modRootPath)
+            ModScanner.RestoreSelections() ' Explicitly call RestoreSelections here to ensure cascade
         End If
         UpdateActionButtonsState() ' Update button state after combo box change (which affects ListView)
     End Sub
@@ -58,7 +65,13 @@ Public Class Frm_Main
             Dim fullAssetPath As String = Path.Combine(modRootPath, assetSubFolder)
             ModScanner.currentAssetTypePath = assetSubFolder
 
+            ' NEW: Clear category path before loading new ones
+            ' This forces RestoreSelections to pick the first available for the new asset type
+            ModScanner.currentCategoryPath = ""
+            ModScanner.currentSelectedAssetTag = "" ' Also clear asset selection
+
             LoadCategories(fullAssetPath)
+            ModScanner.RestoreSelections() ' Explicitly call RestoreSelections here to ensure cascade
         End If
         UpdateActionButtonsState() ' Update button state after combo box change (which affects ListView)
     End Sub
