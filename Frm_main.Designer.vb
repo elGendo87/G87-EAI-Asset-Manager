@@ -46,6 +46,7 @@ Partial Class Frm_Main
         Msm_Close = New ToolStripMenuItem()
         Msm_Filter = New ToolStripMenuItem()
         Msm_FiltersDisabledOnly = New ToolStripMenuItem()
+        Msm_FiltersShowCustom = New ToolStripMenuItem()
         Ctx_Asset.SuspendLayout()
         Mst_Main.SuspendLayout()
         SuspendLayout()
@@ -207,16 +208,24 @@ Partial Class Frm_Main
         ' 
         ' Msm_Filter
         ' 
-        Msm_Filter.DropDownItems.AddRange(New ToolStripItem() {Msm_FiltersDisabledOnly})
+        Msm_Filter.DropDownItems.AddRange(New ToolStripItem() {Msm_FiltersDisabledOnly, Msm_FiltersShowCustom})
         Msm_Filter.Name = "Msm_Filter"
         Msm_Filter.Size = New Size(45, 20)
         Msm_Filter.Text = "Filter"
         ' 
         ' Msm_FiltersDisabledOnly
         ' 
+        Msm_FiltersDisabledOnly.CheckOnClick = True
         Msm_FiltersDisabledOnly.Name = "Msm_FiltersDisabledOnly"
-        Msm_FiltersDisabledOnly.Size = New Size(208, 22)
+        Msm_FiltersDisabledOnly.Size = New Size(234, 22)
         Msm_FiltersDisabledOnly.Text = "Show only disabled items"
+        ' 
+        ' Msm_FiltersShowCustom
+        ' 
+        Msm_FiltersShowCustom.CheckOnClick = True
+        Msm_FiltersShowCustom.Name = "Msm_FiltersShowCustom"
+        Msm_FiltersShowCustom.Size = New Size(234, 22)
+        Msm_FiltersShowCustom.Text = "Show EAI custom folder assets"
         ' 
         ' Frm_Main
         ' 
@@ -236,7 +245,7 @@ Partial Class Frm_Main
         Controls.Add(Lst_Img)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         Name = "Frm_Main"
-        Text = "[G87] EAI Asset Manager - v1.1 Beta"
+        Text = "[G87] EAI Asset Manager - v1.2.0 Beta"
         Ctx_Asset.ResumeLayout(False)
         Mst_Main.ResumeLayout(False)
         Mst_Main.PerformLayout()
@@ -266,5 +275,6 @@ Partial Class Frm_Main
     Friend WithEvents Msm_Close As ToolStripMenuItem
     Friend WithEvents Msm_Filter As ToolStripMenuItem
     Friend WithEvents Msm_FiltersDisabledOnly As ToolStripMenuItem
+    Friend WithEvents Msm_FiltersShowCustom As ToolStripMenuItem
 
 End Class
