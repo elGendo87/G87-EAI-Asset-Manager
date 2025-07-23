@@ -245,7 +245,7 @@ Partial Class Frm_Main
         Controls.Add(Lst_Img)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         Name = "Frm_Main"
-        Text = "[G87] EAI Asset Manager - v1.2.0 Beta"
+        Text = "[G87] EAI Asset Manager - v1.2.2 Beta"
         Ctx_Asset.ResumeLayout(False)
         Mst_Main.ResumeLayout(False)
         Mst_Main.PerformLayout()
