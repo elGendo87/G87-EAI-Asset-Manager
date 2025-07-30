@@ -4,6 +4,9 @@
     <_LastSelectedProfileId>F:\VB .NET FEDE\Asset Manager\Asset Manager\My Project\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="Frm_AssetEditor.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Frm_main.vb">
       <SubType>Form</SubType>
     </Compile>

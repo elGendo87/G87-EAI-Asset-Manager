@@ -8,17 +8,25 @@ Module ModScanner
         Public Property RootPath As String
     End Structure
 
+    ' NEW: Structure to hold mod statistics
+    Public Structure ModStatistics
+        Public Property TotalEnabledAssets As Integer
+        Public Property TotalDisabledAssets As Integer
+        Public Property TotalEnabledAssetSizeInMb As Double
+        Public Property TotalDisabledAssetSizeInMb As Double
+    End Structure
+
     Public IsFilterDisabledOnlyActive As Boolean = False
 
-    Public allModFoldersCache As New List(Of ModInfo)() ' Declarado como Public
+    Public allModFoldersCache As New List(Of ModInfo)()
 
-    Public currentModPath As String = "" ' Declarado como Public
-    Public currentAssetTypePath As String = "" ' Declarado como Public
-    Public currentCategoryPath As String = "" ' Declarado como Public
-    Public currentSelectedAssetTag As String = "" ' Declarado como Public
+    Public currentModPath As String = ""
+    Public currentAssetTypePath As String = ""
+    Public currentCategoryPath As String = ""
+    Public currentSelectedAssetTag As String = ""
 
     Public Sub FormFormat()
-        Frm_Main.Text = "[G87] Asset Manager - V1.2.2 Beta"
+        ' Frm_Main.Text is now handled in Frm_Main.vb's FormFormat()
         Frm_Main.Width = 1280
         Frm_Main.Height = 720
         Frm_Main.StartPosition = FormStartPosition.CenterScreen
@@ -30,7 +38,7 @@ Module ModScanner
             .DropDownStyle = ComboBoxStyle.DropDownList
         End With
 
-        With Frm_Main.Cmb_AssetType ' Corregido: Cmb_AssetType
+        With Frm_Main.Cmb_AssetType
             .DropDownStyle = ComboBoxStyle.DropDownList
         End With
 
@@ -48,7 +56,7 @@ Module ModScanner
     Public Sub DisableCmbandBtns()
         With Frm_Main
             .Cmb_Mods.Enabled = False
-            .Cmb_AssetType.Enabled = False ' Corregido: Cmb_AssetType
+            .Cmb_AssetType.Enabled = False
             .Cmb_Cat.Enabled = False
             .Lst_Img.Enabled = False
             .Btn_DisableSelectedItems.Enabled = False
@@ -60,7 +68,7 @@ Module ModScanner
     Public Sub EnableCmbandBtns()
         With Frm_Main
             .Cmb_Mods.Enabled = True
-            .Cmb_AssetType.Enabled = True ' Corregido: Cmb_AssetType
+            .Cmb_AssetType.Enabled = True
             .Cmb_Cat.Enabled = True
             .Lst_Img.Enabled = True
             .Btn_DisableSelectedItems.Enabled = True
@@ -178,7 +186,7 @@ Module ModScanner
         End If
 
         Frm_Main.Cmb_Mods.Items.Clear()
-        Frm_Main.Cmb_AssetType.Items.Clear() ' Corregido: Cmb_AssetType
+        Frm_Main.Cmb_AssetType.Items.Clear()
         Frm_Main.Cmb_Cat.Items.Clear()
         Frm_Main.Lst_Img.Items.Clear()
 
@@ -203,10 +211,10 @@ Module ModScanner
             End If
         Next
 
-        Dim eaiRootPath As String = GetEAICustomFolderPath()
+        Dim eaiRootPath As String = CustomFiles.GetEAICustomFolderPath()
         If Directory.Exists(eaiRootPath) Then
             If HasDisabledAssets(eaiRootPath) Then
-                filteredMods.Add(New ModInfo With {.DisplayName = "Extra Assets Importer", .RootPath = eaiRootPath})
+                filteredMods.Add(New ModInfo With {.DisplayName = "Extra Assets Importer (Local Assets)", .RootPath = eaiRootPath}) ' Updated DisplayName
             End If
         End If
 
@@ -216,23 +224,17 @@ Module ModScanner
         RestoreSelections()
     End Sub
 
-    Private Function GetEAICustomFolderPath() As String
-        Dim defaultLocalLowPath As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-        Dim appDataRoot As String = Path.GetDirectoryName(defaultLocalLowPath)
-        Return Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II\ModsData\ExtraAssetsImporter")
-    End Function
-
     Private Sub AddEAICustomFolderToScan(ByRef modList As List(Of ModInfo))
-        Dim eaiRootPath As String = GetEAICustomFolderPath()
+        Dim eaiRootPath As String = CustomFiles.GetEAICustomFolderPath()
 
         If Directory.Exists(eaiRootPath) Then
-            modList.Add(New ModInfo With {.DisplayName = "Extra Assets Importer", .RootPath = eaiRootPath})
+            modList.Add(New ModInfo With {.DisplayName = "Extra Assets Importer (Local Assets)", .RootPath = eaiRootPath}) ' Updated DisplayName
         End If
     End Sub
 
     Public Sub PopulateModsComboBox(ByVal modsToLoad As List(Of ModInfo))
         Frm_Main.Cmb_Mods.Items.Clear()
-        Frm_Main.Cmb_AssetType.Items.Clear() ' Corregido: Cmb_AssetType
+        Frm_Main.Cmb_AssetType.Items.Clear()
         Frm_Main.Cmb_Cat.Items.Clear()
         Frm_Main.Lst_Img.Items.Clear()
 
@@ -247,9 +249,9 @@ Module ModScanner
         Next
 
         If Frm_Main.Cmb_Mods.Items.Count > 0 Then
-            ' Frm_Main.Cmb_Mods.SelectedIndex = 0
+            ' Handled by RestoreSelections()
         Else
-            Frm_Main.Cmb_AssetType.Enabled = False ' Corregido: Cmb_AssetType
+            Frm_Main.Cmb_AssetType.Enabled = False
             Frm_Main.Cmb_Cat.Enabled = False
             Frm_Main.Lst_Img.Enabled = False
         End If
@@ -274,7 +276,7 @@ Module ModScanner
     End Function
 
     Public Sub LoadAssetTypes(modRootPath As String)
-        Frm_Main.Cmb_AssetType.Items.Clear() ' Corregido: Cmb_AssetType
+        Frm_Main.Cmb_AssetType.Items.Clear()
         Frm_Main.Cmb_Cat.Items.Clear()
         Frm_Main.Lst_Img.Items.Clear()
 
@@ -311,11 +313,11 @@ Module ModScanner
         End If
 
         For Each item In assetTypesToAdd.OrderBy(Function(x) x.Text)
-            Frm_Main.Cmb_AssetType.Items.Add(item) ' Corregido: Cmb_AssetType
+            Frm_Main.Cmb_AssetType.Items.Add(item)
         Next
 
-        If Frm_Main.Cmb_AssetType.Items.Count > 0 Then ' Corregido: Cmb_AssetType
-            ' Frm_Main.Cmb_AssetType.SelectedIndex = 0 
+        If Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+            ' Handled by RestoreSelections()
         Else
             Frm_Main.Cmb_Cat.Enabled = False
             Frm_Main.Lst_Img.Enabled = False
@@ -366,7 +368,7 @@ Module ModScanner
         Next
 
         If Frm_Main.Cmb_Cat.Items.Count > 0 Then
-            ' Frm_Main.Cmb_Cat.SelectedIndex = 0
+            ' Handled by RestoreSelections()
         Else
             Frm_Main.Lst_Img.Enabled = False
         End If
@@ -471,8 +473,8 @@ Module ModScanner
             currentModPath = ""
         End If
 
-        If Frm_Main.Cmb_AssetType.SelectedItem IsNot Nothing Then ' Corregido: Cmb_AssetType
-            currentAssetTypePath = DirectCast(Frm_Main.Cmb_AssetType.SelectedItem, ComboBoxItem).Value.ToString() ' Corregido: Cmb_AssetType
+        If Frm_Main.Cmb_AssetType.SelectedItem IsNot Nothing Then
+            currentAssetTypePath = DirectCast(Frm_Main.Cmb_AssetType.SelectedItem, ComboBoxItem).Value.ToString()
         Else
             currentAssetTypePath = ""
         End If
@@ -492,37 +494,52 @@ Module ModScanner
 
     Public Sub RestoreSelections()
         If Not String.IsNullOrEmpty(currentModPath) Then
+            Dim found As Boolean = False
             For i As Integer = 0 To Frm_Main.Cmb_Mods.Items.Count - 1
                 Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Mods.Items(i), ComboBoxItem)
                 If item.Value.ToString().Equals(currentModPath, StringComparison.OrdinalIgnoreCase) Then
                     Frm_Main.Cmb_Mods.SelectedIndex = i
+                    found = True
                     Exit For
                 End If
             Next
+            If Not found AndAlso Frm_Main.Cmb_Mods.Items.Count > 0 Then
+                Frm_Main.Cmb_Mods.SelectedIndex = 0
+            End If
         ElseIf Frm_Main.Cmb_Mods.Items.Count > 0 Then
             Frm_Main.Cmb_Mods.SelectedIndex = 0
         End If
 
         If Not String.IsNullOrEmpty(currentAssetTypePath) Then
-            For i As Integer = 0 To Frm_Main.Cmb_AssetType.Items.Count - 1 ' Corregido: Cmb_AssetType
-                Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_AssetType.Items(i), ComboBoxItem) ' Corregido: Cmb_AssetType
+            Dim found As Boolean = False
+            For i As Integer = 0 To Frm_Main.Cmb_AssetType.Items.Count - 1
+                Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_AssetType.Items(i), ComboBoxItem)
                 If item.Value.ToString().Equals(currentAssetTypePath, StringComparison.OrdinalIgnoreCase) Then
-                    Frm_Main.Cmb_AssetType.SelectedIndex = i ' Corregido: Cmb_AssetType
+                    Frm_Main.Cmb_AssetType.SelectedIndex = i
+                    found = True
                     Exit For
                 End If
             Next
-        ElseIf Frm_Main.Cmb_AssetType.Items.Count > 0 Then ' Corregido: Cmb_AssetType
-            Frm_Main.Cmb_AssetType.SelectedIndex = 0 ' Corregido: Cmb_AssetType
+            If Not found AndAlso Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+                Frm_Main.Cmb_AssetType.SelectedIndex = 0
+            End If
+        ElseIf Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+            Frm_Main.Cmb_AssetType.SelectedIndex = 0
         End If
 
         If Not String.IsNullOrEmpty(currentCategoryPath) Then
+            Dim found As Boolean = False
             For i As Integer = 0 To Frm_Main.Cmb_Cat.Items.Count - 1
                 Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Cat.Items(i), ComboBoxItem)
                 If item.Value.ToString().Equals(currentCategoryPath, StringComparison.OrdinalIgnoreCase) Then
                     Frm_Main.Cmb_Cat.SelectedIndex = i
+                    found = True
                     Exit For
                 End If
             Next
+            If Not found AndAlso Frm_Main.Cmb_Cat.Items.Count > 0 Then
+                Frm_Main.Cmb_Cat.SelectedIndex = 0
+            End If
         ElseIf Frm_Main.Cmb_Cat.Items.Count > 0 Then
             Frm_Main.Cmb_Cat.SelectedIndex = 0
         End If
@@ -536,5 +553,61 @@ Module ModScanner
             Return Text
         End Function
     End Class
+
+    ' NEW: Function to calculate statistics for a given mod path
+    Public Function CalculateModStatistics(modRootPath As String) As ModStatistics
+        Dim stats As New ModStatistics()
+        stats.TotalEnabledAssets = 0
+        stats.TotalDisabledAssets = 0
+        stats.TotalEnabledAssetSizeInMb = 0.0
+        stats.TotalDisabledAssetSizeInMb = 0.0
+
+        If Not Directory.Exists(modRootPath) Then
+            Return stats ' Return empty stats if mod path doesn't exist
+        End If
+
+        Dim assetSubFolders As New List(Of String) From {"CustomDecals", "CustomSurfaces", "Surfaces", "CustomNetlanes"}
+
+        For Each subFolderType As String In assetSubFolders
+            Dim fullAssetTypePath As String = Path.Combine(modRootPath, subFolderType)
+            If Directory.Exists(fullAssetTypePath) Then
+                For Each categoryFolder In Directory.GetDirectories(fullAssetTypePath)
+                    For Each assetFolder In Directory.GetDirectories(categoryFolder)
+                        Dim assetSizeInBytes As Long = GetDirectorySize(assetFolder)
+                        Dim assetSizeInMb As Double = Math.Round(assetSizeInBytes / (1024.0 * 1024.0), 2) ' Convert to MB and round to 2 decimal places
+
+                        If Path.GetFileName(assetFolder).StartsWith(".") Then
+                            stats.TotalDisabledAssets += 1
+                            stats.TotalDisabledAssetSizeInMb += assetSizeInMb
+                        Else
+                            stats.TotalEnabledAssets += 1
+                            stats.TotalEnabledAssetSizeInMb += assetSizeInMb
+                        End If
+                    Next
+                Next
+            End If
+        Next
+
+        Return stats
+    End Function
+
+    ' Helper function to get the size of a directory recursively in bytes
+    Private Function GetDirectorySize(path As String) As Long
+        Dim totalSize As Long = 0
+        If Not Directory.Exists(path) Then
+            Return 0
+        End If
+
+        Try
+            For Each file As String In Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
+                Dim fileInfo As New FileInfo(file)
+                totalSize += fileInfo.Length
+            Next
+        Catch ex As Exception
+            Console.WriteLine("Error calculating directory size for " & path & ": " & ex.Message)
+            ' Return current totalSize even if an error occurs for some files/folders
+        End Try
+        Return totalSize
+    End Function
 
 End Module
