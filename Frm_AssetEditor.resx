@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <metadata name="ToolTipAE.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="Gbx_DecalLayerMask.ToolTip" xml:space="preserve">
+    <value>Decal Layer Mask
+
+This options will allow to control over wich objects
+the surfaces, decals or netlanes will be rendered.
+
+Surfaces: Work perfectly on ground and roads, but if
+are set to roads, will bleed on elevated segmentes.
+Not recommended to set any other options.
+
+Decals: Work well on ground, roads, buildings,
+vehicles and props. If you set "Ground" and
+"Building", for example, and you place on ground
+or the building, the decal will be rendered in both.
+
+Netlanes: Similar to decals, but can't be used in
+vertical position.</value>
+  </data>
+  <data name="Gbx_Advanced.ToolTip" xml:space="preserve">
+    <value>Material Properties:
+
+Metallic: Values from 0 to 1. This will adjust the red
+channel from the _MaskMap.png. 0 is no metallic,
+1 full metallic.
+
+Smoothness: Values from 0 to 1. This will adjust the
+green channel from the _MaskMap.png. 0 is no
+smooth, 1 is full smooth (will reflect light)
+
+Metallic Opacity: Values from 0 to 1. This will adjust
+sort of translucity of the decal. 0 will be a little
+translucent, 1 will be complete solid.</value>
+  </data>
+  <data name="Gbx_DecalSize.ToolTip" xml:space="preserve">
+    <value>Decal Size:
+
+Is the size in meters of the mesh containing the texture
+in game.
+
+No mater what the size of your _BaseColorMap.png file
+is, it will stretch or shrink to this values, so keep an eye
+on the aspect ratio.
+
+Height (y) value, is the thickness of the decal. A very thin
+decal will work bad in irregular shapes. A very thick decal
+will be bleed to other object easily.
+
+Pixel Density:
+- 1x1x1 size decal with a 1024x1024 pixels image will have
+a definition of ~1 pixel per milimiter.
+- 2x1x2 size decal with a 1024x1024 pixels image will have
+a definition of ~half pixel per milimeter.
+- 1x1x1 size decal with a 512x512 pixels image will have
+a definition of ~half pixel per milimiter.
+
+Different type of decals have need different image and
+mesh sizes. Small decals (2 meter or less) do not need
+4k images. Big decals may need bigger image sizes, but
+have in mind the final look relative with the game looking.</value>
+  </data>
+  <data name="Gbx_SurfacesOnly.ToolTip" xml:space="preserve">
+    <value>Surfaces Properties:
+
+Roundness: Values from 0 to 1. This will adjust the
+corners of the surface. 0 will be sharp, 1 will be full
+rounded corner.
+
+Edge Normal: Values from 0 to 1. This will adjust the
+bump effect at the edge of the surfaces. 0 is no
+bump, 1 is full bump.
+
+UV Scale: Is the size of the mesh calculated as
+(1/side of the mesh in meters).
+
+Calculate UV Scale: This will help you to calculate
+the UV Scale from the side of the mesh. For example
+a 2x2 square will have 2 meter side mesh, (1/2)=0.5
+The calculated UV Scale will be 0.5</value>
+  </data>
+  <data name="GroupBox1.ToolTip" xml:space="preserve">
+    <value>Normal Map Properties:
+
+Normal Opacity: Values from 0 to 1. This will adjust
+the opacity of the normal map. 0 is transparent (the
+normal map of the object under will be shown).
+1 will show the normal map of the asset.</value>
+  </data>
+  <data name="Nud_UiPriority.ToolTip" xml:space="preserve">
+    <value>UiPriority:
+
+Is the value that set which place in the in game
+menu the asset will be shown in it's own category.
+
+A value 0 will show it first of all, but if other assets
+also have a value of zero, will be shown in loading
+order.
+
+Allowed values from 0 to 99999999.</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAICAAAAEAIACoEAAAFgAAACgAAAAgAAAAQAAAAAEAIAAAAAAAgBAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAA19fXTdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY
+        2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh2AAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2Nb/3bmU/9nRyf/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/hlkX/1oMr/7W0sv/W1tb/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9fCrP+qopv/s7Oz/9jY2P/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY
+        2J3Z2dn/h4eH/25ubv9ubm7/bm5u/25ubv9ubm7/bm5u/39/f//U1NT/trbR/zExpv9oaHP/bm5u/25u
+        bv9ubm7/bm5u/25ubv9ubm7/bm5u/21tbf/Q0ND/2dnZ8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAA2NjYndnZ2f93d3f/WVlZ/1lZWf9ZWVn/WVlZ/1lZWf9ZWVn/WVlZ/319fv8fH6r/AACo/w0N
+        nP9NTWP/WVlZ/1lZWf9ZWVn/WVlZ/1lZWf9ZWVn/WFhY/8/Pz//Z2dnwAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAADY2Nid2dnZ/3d3d/9ZWVn/WVlZ/1lZWf9ZWVn/WVlZ/1lZWf9ZWVn/WVlZ/0dH
+        aP8ICKD/AACo/wcHof9FRWr/WVlZ/1lZWf9ZWVn/WVlZ/1lZWf9YWFj/z8/P/9nZ2fAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/d3d3/1lZWf9ZWVn/WVlZ/1lZWf9ZWVn/WVlZ/1lZ
+        Wf9ZWVn/WVlZ/05OYv8PD5v/AACo/wMDpf8+PnP/ZmZm/2hoaP9nZ2f/ZmZm/25ubv/S0dH/2dnZ8AAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ2f+AgID/WFhY/1lZWf9ZWVn/WVlZ/1lZ
+        Wf9ZWVn/WVlZ/1hYWP9jY2P/dnZ2/4WFj/8xMa3/AACo/wEBqP9qarT/v7+//7+/v//CuK3/0J1o/9nR
+        yP/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/8XFxf+zs7P/pqam/6Gh
+        of+fn5//oKCg/6Kiov+qqqr/uLi4/7+/v/+/v7//v7+//7u7vv9HR7D/AACn/wAAp/9QULH/wrOm/9uL
+        NP/mdwD/2dHI/9nZ2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/xcXF/7+/
+        v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//wbqy/7++vP+/v7//v7+//8C6tP9yQF7/AACn/wAA
+        qP9FJHb/3HIH/+Z3AP/Z0cj/2dnZ8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ
+        2f/Gw8D/vr+//7+9u/+/v7//v7+//7++vf/PoW//xrKd/8K4rv/ehif/4X8V/9OZWv/OonP/3YYo/+Z4
+        AP+STD//BQKk/wAAqP8uGIf/0GwQ/9nRyP/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AADY2Nid2dnZ/96XSv/ajDf/5HsK/8+hcf+/vbz/zaR5/+Z3AP/mdwD/5ncA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+V4AP+rWSz/Dgee/wAAqP8cDpT/tbHI/9nZ2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAANjY2J3Z2dn/4o8z/+Z4AP/meAD/5ngA/+N9Dv/kegb/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/AZBz/HA+U/wAAqP8NDar/np7M8AAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ2f/ijzP/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/RbRD/LxiG/wAAqP8CAqf8AACnYAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/+KPM//meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/ccgf/Qz2r/wAA
+        qP8AAKf+AACogQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/4o8z/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z3
+        AP/Xz8j/XV28/gAAp/8AAKj/AACmogAAqgYAAAAAAAAAAAAAAAAAAAAA2NjYndnZ2f/ijzP/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ncA/9nRyP/Y2NjwAACocAAAp/wAAKj/AACnaQAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/+KP
+        M//meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/mdwD/2dHI/9nZ2fAAAAAAAACoUAAAp7EAAKYXAAAAAAAAAAAAAAAAAAAAANjY
+        2J3Z2dn/4o8z/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z3AP/Z0cj/2dnZ8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAA2NjYndnZ2f/ijzP/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/leAH/24oz/9mO
+        Pv/Zjj7/2Y4+/9mOPv/Zjj7/2Y4+/9mOPv/hgBb/5ncA/9nRyP/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAADY2Nid2dnZ/+KPM//meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/9Kc
+        Yv++v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//v7+//8G7tP/jfQ//2dHI/9nZ2fAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/4o8z/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/zKZ9/7+/v/+/v7//v7+//7+/v/+/v7//v7+//7+/v/+/v7//vr+//9+CH//Z0cj/2dnZ8AAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ2f/ijzP/5ngA/+Z4AP/meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/hgBf/zaR4/76/v/+/v7//v7+//7+/v/+/v7//v7+//8itkf/WlE//5ncA/9nR
+        yP/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADY2Nid2dnZ/+KPM//meAD/5ngA/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/leAD/zqJz/8mri//Avbn/v7+//7+/v//BurL/4n4Q/+Z4
+        AP/mdwD/2dHI/9nZ2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANjY2J3Z2dn/4o8z/+Z4
+        AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/+Z4AP/meAD/5ngA/9+DIP/Sm2D/05lc/+GA
+        F//meAD/5ngA/+Z3AP/Z0cj/2dnZ8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2NjYndnZ
+        2f/fqW//4ZpO/+GaTv/hmk7/4ZpO/+GaTv/hmk7/4ZpO/+GaTv/hmk7/4ZpO/+GaTv/hmk7/4ZpO/+Ga
+        Tv/hmk7/4ZpO/+GaTv/hmk7/4ZpO/9nUzv/Z2dnwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AADY2Nid2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ
+        2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2f/Z2dn/2dnZ/9nZ2fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAANfX103Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY
+        2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYfdjY2H3Y2Nh92NjYdgAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAA/////8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AA
+        AD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAB/AAAAPwAAAA8AAAAPAAAAjwAAAP8AAAD/AAAA/wAAAP8AA
+        AD/AAAA/wAAAP8AAAD/AAAA/wAAAP/////8=
+</value>
+  </data>
+</root>

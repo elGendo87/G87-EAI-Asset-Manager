@@ -28,7 +28,13 @@ Partial Class Frm_Main
         Ctx_Asset = New ContextMenuStrip(components)
         MenuItem_DisableAsset = New ToolStripMenuItem()
         MenuItem_EnableAsset = New ToolStripMenuItem()
+        ToolStripSeparator3 = New ToolStripSeparator()
         MenuItem_OpenLocation = New ToolStripMenuItem()
+        ToolStripSeparator2 = New ToolStripSeparator()
+        MenuItem_CreateLocalCopy = New ToolStripMenuItem()
+        MenuItem_DeleteLocalAsset = New ToolStripMenuItem()
+        MenuItem_RenameLocalAsset = New ToolStripMenuItem()
+        MenuItem_EditLocalAsset = New ToolStripMenuItem()
         Cmb_Mods = New ComboBox()
         Btn_Scan = New Button()
         Cmb_AssetType = New ComboBox()
@@ -46,7 +52,8 @@ Partial Class Frm_Main
         Msm_Close = New ToolStripMenuItem()
         Msm_Filter = New ToolStripMenuItem()
         Msm_FiltersDisabledOnly = New ToolStripMenuItem()
-        Msm_FiltersShowCustom = New ToolStripMenuItem()
+        Msm_About = New ToolStripMenuItem()
+        Txt_InfoBar = New TextBox()
         Ctx_Asset.SuspendLayout()
         Mst_Main.SuspendLayout()
         SuspendLayout()
@@ -65,27 +72,61 @@ Partial Class Frm_Main
         ' 
         ' Ctx_Asset
         ' 
-        Ctx_Asset.Items.AddRange(New ToolStripItem() {MenuItem_DisableAsset, MenuItem_EnableAsset, MenuItem_OpenLocation})
+        Ctx_Asset.Items.AddRange(New ToolStripItem() {MenuItem_DisableAsset, MenuItem_EnableAsset, ToolStripSeparator3, MenuItem_OpenLocation, ToolStripSeparator2, MenuItem_CreateLocalCopy, MenuItem_DeleteLocalAsset, MenuItem_RenameLocalAsset, MenuItem_EditLocalAsset})
         Ctx_Asset.Name = "Ctx_Asset"
-        Ctx_Asset.Size = New Size(180, 70)
+        Ctx_Asset.Size = New Size(184, 170)
         ' 
         ' MenuItem_DisableAsset
         ' 
         MenuItem_DisableAsset.Name = "MenuItem_DisableAsset"
-        MenuItem_DisableAsset.Size = New Size(179, 22)
+        MenuItem_DisableAsset.Size = New Size(183, 22)
         MenuItem_DisableAsset.Text = "Disable Asset"
         ' 
         ' MenuItem_EnableAsset
         ' 
         MenuItem_EnableAsset.Name = "MenuItem_EnableAsset"
-        MenuItem_EnableAsset.Size = New Size(179, 22)
+        MenuItem_EnableAsset.Size = New Size(183, 22)
         MenuItem_EnableAsset.Text = "Enable Asset"
+        ' 
+        ' ToolStripSeparator3
+        ' 
+        ToolStripSeparator3.Name = "ToolStripSeparator3"
+        ToolStripSeparator3.Size = New Size(180, 6)
         ' 
         ' MenuItem_OpenLocation
         ' 
         MenuItem_OpenLocation.Name = "MenuItem_OpenLocation"
-        MenuItem_OpenLocation.Size = New Size(179, 22)
-        MenuItem_OpenLocation.Text = "Open Item Location"
+        MenuItem_OpenLocation.Size = New Size(183, 22)
+        MenuItem_OpenLocation.Text = "Open in File Explorer"
+        ' 
+        ' ToolStripSeparator2
+        ' 
+        ToolStripSeparator2.Name = "ToolStripSeparator2"
+        ToolStripSeparator2.Size = New Size(180, 6)
+        ' 
+        ' MenuItem_CreateLocalCopy
+        ' 
+        MenuItem_CreateLocalCopy.Name = "MenuItem_CreateLocalCopy"
+        MenuItem_CreateLocalCopy.Size = New Size(183, 22)
+        MenuItem_CreateLocalCopy.Text = "Create Local Copy"
+        ' 
+        ' MenuItem_DeleteLocalAsset
+        ' 
+        MenuItem_DeleteLocalAsset.Name = "MenuItem_DeleteLocalAsset"
+        MenuItem_DeleteLocalAsset.Size = New Size(183, 22)
+        MenuItem_DeleteLocalAsset.Text = "Delete Local Asset"
+        ' 
+        ' MenuItem_RenameLocalAsset
+        ' 
+        MenuItem_RenameLocalAsset.Name = "MenuItem_RenameLocalAsset"
+        MenuItem_RenameLocalAsset.Size = New Size(183, 22)
+        MenuItem_RenameLocalAsset.Text = "Rename Local Asset"
+        ' 
+        ' MenuItem_EditLocalAsset
+        ' 
+        MenuItem_EditLocalAsset.Name = "MenuItem_EditLocalAsset"
+        MenuItem_EditLocalAsset.Size = New Size(183, 22)
+        MenuItem_EditLocalAsset.Text = "Edit Asset Properties"
         ' 
         ' Cmb_Mods
         ' 
@@ -103,7 +144,7 @@ Partial Class Frm_Main
         Btn_Scan.Size = New Size(96, 25)
         Btn_Scan.TabIndex = 2
         Btn_Scan.Text = "> Scan Mods"
-        ToolTips.SetToolTip(Btn_Scan, "Scan all the subscribed mods and add them to the subscribed mods list." & vbCrLf & vbCrLf & "This process could take a while, depending in your disk speed and amount of mods subscribed.")
+        ToolTips.SetToolTip(Btn_Scan, "Scan all the subscribed mods and the custom assets, and add them to the subscribed mods list." & vbCrLf & vbCrLf & "This process could take a while, depending in your disk speed and amount of mods subscribed.")
         Btn_Scan.UseVisualStyleBackColor = True
         ' 
         ' Cmb_AssetType
@@ -127,9 +168,9 @@ Partial Class Frm_Main
         ' Btn_DisableSelectedItems
         ' 
         Btn_DisableSelectedItems.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        Btn_DisableSelectedItems.Location = New Point(938, 651)
+        Btn_DisableSelectedItems.Location = New Point(938, 653)
         Btn_DisableSelectedItems.Name = "Btn_DisableSelectedItems"
-        Btn_DisableSelectedItems.Size = New Size(154, 23)
+        Btn_DisableSelectedItems.Size = New Size(154, 25)
         Btn_DisableSelectedItems.TabIndex = 5
         Btn_DisableSelectedItems.Text = "Disable Selected Assets"
         ToolTips.SetToolTip(Btn_DisableSelectedItems, "Disable all selected assets to skip loading in game.")
@@ -138,9 +179,9 @@ Partial Class Frm_Main
         ' Btn_EnableSelectedItems
         ' 
         Btn_EnableSelectedItems.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        Btn_EnableSelectedItems.Location = New Point(1098, 651)
+        Btn_EnableSelectedItems.Location = New Point(1098, 653)
         Btn_EnableSelectedItems.Name = "Btn_EnableSelectedItems"
-        Btn_EnableSelectedItems.Size = New Size(154, 23)
+        Btn_EnableSelectedItems.Size = New Size(154, 25)
         Btn_EnableSelectedItems.TabIndex = 6
         Btn_EnableSelectedItems.Text = "Enable Selected Assets"
         ToolTips.SetToolTip(Btn_EnableSelectedItems, "Enable all selected assets to show again in game.")
@@ -175,7 +216,7 @@ Partial Class Frm_Main
         ' 
         ' Mst_Main
         ' 
-        Mst_Main.Items.AddRange(New ToolStripItem() {Msm_Main, Msm_Filter})
+        Mst_Main.Items.AddRange(New ToolStripItem() {Msm_Main, Msm_Filter, Msm_About})
         Mst_Main.Location = New Point(0, 0)
         Mst_Main.Name = "Mst_Main"
         Mst_Main.Size = New Size(1264, 24)
@@ -208,7 +249,7 @@ Partial Class Frm_Main
         ' 
         ' Msm_Filter
         ' 
-        Msm_Filter.DropDownItems.AddRange(New ToolStripItem() {Msm_FiltersDisabledOnly, Msm_FiltersShowCustom})
+        Msm_Filter.DropDownItems.AddRange(New ToolStripItem() {Msm_FiltersDisabledOnly})
         Msm_Filter.Name = "Msm_Filter"
         Msm_Filter.Size = New Size(45, 20)
         Msm_Filter.Text = "Filter"
@@ -217,21 +258,31 @@ Partial Class Frm_Main
         ' 
         Msm_FiltersDisabledOnly.CheckOnClick = True
         Msm_FiltersDisabledOnly.Name = "Msm_FiltersDisabledOnly"
-        Msm_FiltersDisabledOnly.Size = New Size(234, 22)
+        Msm_FiltersDisabledOnly.Size = New Size(208, 22)
         Msm_FiltersDisabledOnly.Text = "Show only disabled items"
         ' 
-        ' Msm_FiltersShowCustom
+        ' Msm_About
         ' 
-        Msm_FiltersShowCustom.CheckOnClick = True
-        Msm_FiltersShowCustom.Name = "Msm_FiltersShowCustom"
-        Msm_FiltersShowCustom.Size = New Size(234, 22)
-        Msm_FiltersShowCustom.Text = "Show EAI custom folder assets"
+        Msm_About.Name = "Msm_About"
+        Msm_About.Size = New Size(52, 20)
+        Msm_About.Text = "About"
+        ' 
+        ' Txt_InfoBar
+        ' 
+        Txt_InfoBar.BorderStyle = BorderStyle.FixedSingle
+        Txt_InfoBar.Cursor = Cursors.No
+        Txt_InfoBar.Location = New Point(12, 653)
+        Txt_InfoBar.Name = "Txt_InfoBar"
+        Txt_InfoBar.ReadOnly = True
+        Txt_InfoBar.Size = New Size(920, 23)
+        Txt_InfoBar.TabIndex = 11
         ' 
         ' Frm_Main
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1264, 681)
+        Controls.Add(Txt_InfoBar)
         Controls.Add(Mst_Main)
         Controls.Add(Label3)
         Controls.Add(Label2)
@@ -245,7 +296,7 @@ Partial Class Frm_Main
         Controls.Add(Lst_Img)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         Name = "Frm_Main"
-        Text = "[G87] EAI Asset Manager - v1.2.2 Beta"
+        Text = "[G87] EAI Asset Manager - v1.3.8 Beta"
         Ctx_Asset.ResumeLayout(False)
         Mst_Main.ResumeLayout(False)
         Mst_Main.PerformLayout()
@@ -275,6 +326,13 @@ Partial Class Frm_Main
     Friend WithEvents Msm_Close As ToolStripMenuItem
     Friend WithEvents Msm_Filter As ToolStripMenuItem
     Friend WithEvents Msm_FiltersDisabledOnly As ToolStripMenuItem
-    Friend WithEvents Msm_FiltersShowCustom As ToolStripMenuItem
+    Friend WithEvents MenuItem_CreateLocalCopy As ToolStripMenuItem
+    Friend WithEvents MenuItem_DeleteLocalAsset As ToolStripMenuItem
+    Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
+    Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
+    Friend WithEvents MenuItem_RenameLocalAsset As ToolStripMenuItem
+    Friend WithEvents Txt_InfoBar As TextBox
+    Friend WithEvents Msm_About As ToolStripMenuItem
+    Friend WithEvents MenuItem_EditLocalAsset As ToolStripMenuItem
 
 End Class
