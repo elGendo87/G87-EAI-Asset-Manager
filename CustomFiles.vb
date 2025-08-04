@@ -1,6 +1,7 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.FileIO ' For FileSystem.CopyDirectory
 Imports Microsoft.VisualBasic.Interaction ' For InputBox
+Imports System.Text.RegularExpressions ' For Regex
 
 Module CustomFiles
 
@@ -15,7 +16,7 @@ Module CustomFiles
     ' Allowed characters: alphanumeric, space, hyphen, underscore
     ' Max length: 128 characters
     Private Function IsValidAssetName(name As String) As Boolean
-        If String.IsNullOrEmpty(name) OrElse name.Length > 128 OrElse name.StartsWith(".") Then
+        If String.IsNullOrEmpty(name) OrElse name.Length > 128 OrElse name.StartsWith("."c) Then
             Return False
         End If
 

@@ -7,11 +7,19 @@
     <StartupObject>Sub Main</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
     <MyType>WindowsForms</MyType>
-    <ApplicationIcon>My Project\main.ico</ApplicationIcon>
+    <ApplicationIcon>DataFiles\main.ico</ApplicationIcon>
+    <AppDesignerFolder>My Project</AppDesignerFolder>
   </PropertyGroup>
 
+	<ItemGroup>
+		<Content Include="DataFiles\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+
+	</ItemGroup>
+	
   <ItemGroup>
-    <Content Include="My Project\main.ico" />
+    <Content Include="DataFiles\main.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,12 +33,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="My Project\Application.Designer.vb">
+    <Compile Update="DataFiles\Application.Designer.vb">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Application.myapp</DependentUpon>
     </Compile>
-    <Compile Update="My Project\Resources.Designer.vb">
+    <Compile Update="DataFiles\Resources.Designer.vb">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -38,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="My Project\Resources.resx">
+    <EmbeddedResource Update="DataFiles\Resources.resx">
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
@@ -46,7 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="My Project\Application.myapp">
+    <None Update="DataFiles\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
     </None>
