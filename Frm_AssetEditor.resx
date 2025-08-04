@@ -219,6 +219,20 @@ order.
 
 Allowed values from 0 to 99999999.</value>
   </data>
+  <data name="Nud_DrawOrder.ToolTip" xml:space="preserve">
+    <value>Draw Order:
+
+This value set the order in wich different assets (decals,
+surfacer or netlanes) are rendered.
+
+Allowed values from -170 to 200.
+
+Surfaces: -170 to 0. You can use bigger values but will
+be rendered under the decals.
+
+Decals/Netlanes: 0 to 200. You can use negative values
+but will be rendered under the surfaces. </value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

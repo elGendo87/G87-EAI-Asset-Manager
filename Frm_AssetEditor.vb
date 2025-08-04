@@ -42,6 +42,10 @@ Public Class Frm_AssetEditor
         Lbl_AssetTypeName.Text = AssetType
         Lbl_AssetCatName.Text = AssetCategory
 
+        ' Set button icons
+        Btn_Modify.Image = imageDictionary("QSave")
+        Btn_Cancel.Image = imageDictionary("Cancel")
+
         ' Load and display JSON data
         LoadAssetJsonData()
 
@@ -726,10 +730,25 @@ Public Class Frm_AssetEditor
             floatObject.Add("_DrawOrder", parsedDrawOrder)
 
             If AssetType = "Surfaces" Then
+
+
                 floatObject.Add("colossal_UVScale", parsedUVScale)
                 floatObject.Add("colossal_EdgeNormal", parsedEdgeNormal)
+
+                'Added to handle vector properties for Surfaces
+                ' Retrieve existing Vector properties from the original content
+                Dim existingVectorObject As JObject = New JObject()
+                If _assetJsonContent.ContainsKey("Vector") AndAlso _assetJsonContent("Vector").Type = JTokenType.Object Then
+                    existingVectorObject = DirectCast(_assetJsonContent("Vector"), JObject)
+                End If
+                newAssetJsonContent.Add("Float", floatObject)
+                newAssetJsonContent.Add("Vector", existingVectorObject)
+
             End If
-            newAssetJsonContent.Add("Float", floatObject)
+
+            If AssetType <> "Surfaces" Then ' If AssetType is Surface skip this because is added before
+                newAssetJsonContent.Add("Float", floatObject)
+            End If
 
             ' 4. Add Vector object if Decals/Netlanes
             If AssetType = "Decals" OrElse AssetType = "Netlanes" Then
@@ -829,8 +848,10 @@ Public Class Frm_AssetEditor
                 jsonFileName = "decal.json" ' Netlanes also use decal.json
                 netlaneJsonPath = Path.Combine(AssetFullPath, "netlane.json") ' Path for netlane.json
             Case Else
-                MessageBox.Show("Unsupported asset type for editing: " & AssetType, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                Return
+                MessageBox.Show("Unsupported asset type for editing: " & AssetType & vbCrLf & vbCrLf & "Operation will be terminated.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Me.Close() ' Close the form if JSON parsing fails
+                Exit Sub
+                'Return
         End Select
 
         mainJsonPath = Path.Combine(AssetFullPath, jsonFileName)
@@ -841,12 +862,16 @@ Public Class Frm_AssetEditor
                 Dim jsonText As String = File.ReadAllText(mainJsonPath)
                 _assetJsonContent = JObject.Parse(jsonText)
             Catch ex As Exception
-                MessageBox.Show("Error reading or parsing " & jsonFileName & ": " & ex.Message, "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                _assetJsonContent = New JObject() ' Initialize as empty object to handle default values
+                MessageBox.Show("Error reading or parsing " & jsonFileName & ": " & ex.Message & vbCrLf & vbCrLf & "Operation will be terminated.", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Me.Close() ' Close the form if JSON parsing fails
+                Exit Sub
+                '_assetJsonContent = New JObject() ' Initialize as empty object to handle default values
             End Try
         Else
-            MessageBox.Show(jsonFileName & " not found for this asset. Using default values.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            _assetJsonContent = New JObject() ' Initialize as empty object to handle default values
+            MessageBox.Show(jsonFileName & " not found for this asset." & vbCrLf & vbCrLf & "Operation will be terminated.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close() ' Close the form if JSON parsing fails
+            Exit Sub
+            '_assetJsonContent = New JObject() ' Initialize as empty object to handle default values
         End If
 
         ' Load netlane.json if asset type is Netlane
@@ -860,7 +885,7 @@ Public Class Frm_AssetEditor
                     _netlaneJsonContent = New JObject() ' Initialize as empty object
                 End Try
             Else
-                MessageBox.Show("netlane.json not found for this Netlane asset. It will be created with default values upon saving.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                MessageBox.Show("netlane.json not found for this Netlane asset. It will be created with default values upon saving.", "netlane.json Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
                 _netlaneJsonContent = New JObject() ' Initialize as empty object so it's created on save
             End If
         End If

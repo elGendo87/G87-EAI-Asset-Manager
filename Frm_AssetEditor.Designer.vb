@@ -234,20 +234,24 @@ Partial Class Frm_AssetEditor
         ' 
         ' Btn_Cancel
         ' 
+        Btn_Cancel.ImageAlign = ContentAlignment.MiddleLeft
         Btn_Cancel.Location = New Point(617, 406)
         Btn_Cancel.Name = "Btn_Cancel"
-        Btn_Cancel.Size = New Size(75, 23)
+        Btn_Cancel.Size = New Size(75, 25)
         Btn_Cancel.TabIndex = 8
         Btn_Cancel.Text = "Cancel"
+        Btn_Cancel.TextAlign = ContentAlignment.MiddleRight
         Btn_Cancel.UseVisualStyleBackColor = True
         ' 
         ' Btn_Modify
         ' 
+        Btn_Modify.ImageAlign = ContentAlignment.MiddleLeft
         Btn_Modify.Location = New Point(536, 406)
         Btn_Modify.Name = "Btn_Modify"
-        Btn_Modify.Size = New Size(75, 23)
+        Btn_Modify.Size = New Size(75, 25)
         Btn_Modify.TabIndex = 9
         Btn_Modify.Text = "Save"
+        Btn_Modify.TextAlign = ContentAlignment.MiddleRight
         Btn_Modify.UseVisualStyleBackColor = True
         ' 
         ' Gbx_Advanced
@@ -260,7 +264,7 @@ Partial Class Frm_AssetEditor
         Gbx_Advanced.Controls.Add(Lbl_Metallic)
         Gbx_Advanced.Location = New Point(146, 265)
         Gbx_Advanced.Name = "Gbx_Advanced"
-        Gbx_Advanced.Size = New Size(187, 150)
+        Gbx_Advanced.Size = New Size(187, 137)
         Gbx_Advanced.TabIndex = 10
         Gbx_Advanced.TabStop = False
         Gbx_Advanced.Text = "Material Properties (?)"
@@ -584,7 +588,7 @@ Partial Class Frm_AssetEditor
         GroupBox1.Controls.Add(Lbl_NormalOpacity)
         GroupBox1.Location = New Point(339, 265)
         GroupBox1.Name = "GroupBox1"
-        GroupBox1.Size = New Size(165, 150)
+        GroupBox1.Size = New Size(165, 137)
         GroupBox1.TabIndex = 17
         GroupBox1.TabStop = False
         GroupBox1.Text = "Normal Map Properties (?)"
@@ -627,11 +631,13 @@ Partial Class Frm_AssetEditor
         Nud_DrawOrder.Size = New Size(100, 23)
         Nud_DrawOrder.TabIndex = 18
         Nud_DrawOrder.TabStop = False
+        ToolTipAE.SetToolTip(Nud_DrawOrder, resources.GetString("Nud_DrawOrder.ToolTip"))
         ' 
         ' Frm_AssetEditor
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
+        BackColor = SystemColors.Control
         ClientSize = New Size(704, 441)
         Controls.Add(Nud_UiPriority)
         Controls.Add(Nud_DrawOrder)

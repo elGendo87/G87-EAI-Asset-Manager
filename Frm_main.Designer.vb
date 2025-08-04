@@ -36,7 +36,6 @@ Partial Class Frm_Main
         MenuItem_RenameLocalAsset = New ToolStripMenuItem()
         MenuItem_EditLocalAsset = New ToolStripMenuItem()
         Cmb_Mods = New ComboBox()
-        Btn_Scan = New Button()
         Cmb_AssetType = New ComboBox()
         Cmb_Cat = New ComboBox()
         Btn_DisableSelectedItems = New Button()
@@ -47,13 +46,16 @@ Partial Class Frm_Main
         ToolTips = New ToolTip(components)
         Mst_Main = New MenuStrip()
         Msm_Main = New ToolStripMenuItem()
-        Msm_ScanMods = New ToolStripMenuItem()
+        Msm_InstCustomAssets = New ToolStripMenuItem()
         ToolStripSeparator1 = New ToolStripSeparator()
         Msm_Close = New ToolStripMenuItem()
         Msm_Filter = New ToolStripMenuItem()
         Msm_FiltersDisabledOnly = New ToolStripMenuItem()
         Msm_About = New ToolStripMenuItem()
         Txt_InfoBar = New TextBox()
+        Lbl_Loading = New Label()
+        ProcLoading = New Process()
+        Chk_ShowEAI = New CheckBox()
         Ctx_Asset.SuspendLayout()
         Mst_Main.SuspendLayout()
         SuspendLayout()
@@ -62,12 +64,13 @@ Partial Class Frm_Main
         ' 
         Lst_Img.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Lst_Img.BackColor = Color.LightGray
-        Lst_Img.CheckBoxes = True
         Lst_Img.ContextMenuStrip = Ctx_Asset
         Lst_Img.Location = New Point(12, 62)
         Lst_Img.Name = "Lst_Img"
+        Lst_Img.ShowGroups = False
         Lst_Img.Size = New Size(1240, 583)
         Lst_Img.TabIndex = 0
+        Lst_Img.TabStop = False
         Lst_Img.UseCompatibleStateImageBehavior = False
         ' 
         ' Ctx_Asset
@@ -137,16 +140,6 @@ Partial Class Frm_Main
         Cmb_Mods.TabIndex = 1
         ToolTips.SetToolTip(Cmb_Mods, "List of subscribed mods that contain decals, netlanes or surfaces to be managed.")
         ' 
-        ' Btn_Scan
-        ' 
-        Btn_Scan.Location = New Point(12, 32)
-        Btn_Scan.Name = "Btn_Scan"
-        Btn_Scan.Size = New Size(96, 25)
-        Btn_Scan.TabIndex = 2
-        Btn_Scan.Text = "> Scan Mods"
-        ToolTips.SetToolTip(Btn_Scan, "Scan all the subscribed mods and the custom assets, and add them to the subscribed mods list." & vbCrLf & vbCrLf & "This process could take a while, depending in your disk speed and amount of mods subscribed.")
-        Btn_Scan.UseVisualStyleBackColor = True
-        ' 
         ' Cmb_AssetType
         ' 
         Cmb_AssetType.FormattingEnabled = True
@@ -168,22 +161,26 @@ Partial Class Frm_Main
         ' Btn_DisableSelectedItems
         ' 
         Btn_DisableSelectedItems.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        Btn_DisableSelectedItems.Location = New Point(938, 653)
+        Btn_DisableSelectedItems.ImageAlign = ContentAlignment.MiddleLeft
+        Btn_DisableSelectedItems.Location = New Point(938, 652)
         Btn_DisableSelectedItems.Name = "Btn_DisableSelectedItems"
         Btn_DisableSelectedItems.Size = New Size(154, 25)
         Btn_DisableSelectedItems.TabIndex = 5
         Btn_DisableSelectedItems.Text = "Disable Selected Assets"
+        Btn_DisableSelectedItems.TextAlign = ContentAlignment.MiddleRight
         ToolTips.SetToolTip(Btn_DisableSelectedItems, "Disable all selected assets to skip loading in game.")
         Btn_DisableSelectedItems.UseVisualStyleBackColor = True
         ' 
         ' Btn_EnableSelectedItems
         ' 
         Btn_EnableSelectedItems.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
-        Btn_EnableSelectedItems.Location = New Point(1098, 653)
+        Btn_EnableSelectedItems.ImageAlign = ContentAlignment.MiddleLeft
+        Btn_EnableSelectedItems.Location = New Point(1098, 652)
         Btn_EnableSelectedItems.Name = "Btn_EnableSelectedItems"
         Btn_EnableSelectedItems.Size = New Size(154, 25)
         Btn_EnableSelectedItems.TabIndex = 6
         Btn_EnableSelectedItems.Text = "Enable Selected Assets"
+        Btn_EnableSelectedItems.TextAlign = ContentAlignment.MiddleRight
         ToolTips.SetToolTip(Btn_EnableSelectedItems, "Enable all selected assets to show again in game.")
         Btn_EnableSelectedItems.UseVisualStyleBackColor = True
         ' 
@@ -219,32 +216,32 @@ Partial Class Frm_Main
         Mst_Main.Items.AddRange(New ToolStripItem() {Msm_Main, Msm_Filter, Msm_About})
         Mst_Main.Location = New Point(0, 0)
         Mst_Main.Name = "Mst_Main"
+        Mst_Main.RenderMode = ToolStripRenderMode.System
         Mst_Main.Size = New Size(1264, 24)
         Mst_Main.TabIndex = 10
-        Mst_Main.Text = "MenuStrip1"
         ' 
         ' Msm_Main
         ' 
-        Msm_Main.DropDownItems.AddRange(New ToolStripItem() {Msm_ScanMods, ToolStripSeparator1, Msm_Close})
+        Msm_Main.DropDownItems.AddRange(New ToolStripItem() {Msm_InstCustomAssets, ToolStripSeparator1, Msm_Close})
         Msm_Main.Name = "Msm_Main"
         Msm_Main.Size = New Size(46, 20)
         Msm_Main.Text = "Main"
         ' 
-        ' Msm_ScanMods
+        ' Msm_InstCustomAssets
         ' 
-        Msm_ScanMods.Name = "Msm_ScanMods"
-        Msm_ScanMods.Size = New Size(132, 22)
-        Msm_ScanMods.Text = "Scan Mods"
+        Msm_InstCustomAssets.Name = "Msm_InstCustomAssets"
+        Msm_InstCustomAssets.Size = New Size(186, 22)
+        Msm_InstCustomAssets.Text = "Install Custom Assets"
         ' 
         ' ToolStripSeparator1
         ' 
         ToolStripSeparator1.Name = "ToolStripSeparator1"
-        ToolStripSeparator1.Size = New Size(129, 6)
+        ToolStripSeparator1.Size = New Size(183, 6)
         ' 
         ' Msm_Close
         ' 
         Msm_Close.Name = "Msm_Close"
-        Msm_Close.Size = New Size(132, 22)
+        Msm_Close.Size = New Size(186, 22)
         Msm_Close.Text = "Exit"
         ' 
         ' Msm_Filter
@@ -269,19 +266,55 @@ Partial Class Frm_Main
         ' 
         ' Txt_InfoBar
         ' 
-        Txt_InfoBar.BorderStyle = BorderStyle.FixedSingle
-        Txt_InfoBar.Cursor = Cursors.No
+        Txt_InfoBar.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Txt_InfoBar.Location = New Point(12, 653)
         Txt_InfoBar.Name = "Txt_InfoBar"
         Txt_InfoBar.ReadOnly = True
         Txt_InfoBar.Size = New Size(920, 23)
         Txt_InfoBar.TabIndex = 11
         ' 
+        ' Lbl_Loading
+        ' 
+        Lbl_Loading.BorderStyle = BorderStyle.FixedSingle
+        Lbl_Loading.FlatStyle = FlatStyle.Flat
+        Lbl_Loading.Font = New Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        Lbl_Loading.Location = New Point(506, 343)
+        Lbl_Loading.Name = "Lbl_Loading"
+        Lbl_Loading.Size = New Size(200, 44)
+        Lbl_Loading.TabIndex = 13
+        Lbl_Loading.Text = "LOADING..."
+        Lbl_Loading.TextAlign = ContentAlignment.MiddleCenter
+        Lbl_Loading.Visible = False
+        ' 
+        ' ProcLoading
+        ' 
+        ProcLoading.StartInfo.Domain = ""
+        ProcLoading.StartInfo.LoadUserProfile = False
+        ProcLoading.StartInfo.Password = Nothing
+        ProcLoading.StartInfo.StandardErrorEncoding = Nothing
+        ProcLoading.StartInfo.StandardInputEncoding = Nothing
+        ProcLoading.StartInfo.StandardOutputEncoding = Nothing
+        ProcLoading.StartInfo.UseCredentialsForNetworkingOnly = False
+        ProcLoading.StartInfo.UserName = ""
+        ProcLoading.SynchronizingObject = Me
+        ' 
+        ' Chk_ShowEAI
+        ' 
+        Chk_ShowEAI.AutoSize = True
+        Chk_ShowEAI.Location = New Point(15, 36)
+        Chk_ShowEAI.Name = "Chk_ShowEAI"
+        Chk_ShowEAI.Size = New Size(84, 19)
+        Chk_ShowEAI.TabIndex = 14
+        Chk_ShowEAI.Text = "EAI Sorting"
+        Chk_ShowEAI.UseVisualStyleBackColor = True
+        ' 
         ' Frm_Main
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1264, 681)
+        Controls.Add(Chk_ShowEAI)
+        Controls.Add(Lbl_Loading)
         Controls.Add(Txt_InfoBar)
         Controls.Add(Mst_Main)
         Controls.Add(Label3)
@@ -291,12 +324,11 @@ Partial Class Frm_Main
         Controls.Add(Btn_DisableSelectedItems)
         Controls.Add(Cmb_Cat)
         Controls.Add(Cmb_AssetType)
-        Controls.Add(Btn_Scan)
         Controls.Add(Cmb_Mods)
         Controls.Add(Lst_Img)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         Name = "Frm_Main"
-        Text = "[G87] EAI Asset Manager - v1.3.8 Beta"
+        Text = "[G87] EAI Asset Manager - v1.4.1 r3 Beta"
         Ctx_Asset.ResumeLayout(False)
         Mst_Main.ResumeLayout(False)
         Mst_Main.PerformLayout()
@@ -306,7 +338,6 @@ Partial Class Frm_Main
 
     Friend WithEvents Lst_Img As ListView
     Friend WithEvents Cmb_Mods As ComboBox
-    Friend WithEvents Btn_Scan As Button
     Friend WithEvents Cmb_AssetType As ComboBox
     Friend WithEvents Cmb_Cat As ComboBox
     Friend WithEvents Ctx_Asset As ContextMenuStrip
@@ -321,7 +352,6 @@ Partial Class Frm_Main
     Friend WithEvents ToolTips As ToolTip
     Friend WithEvents Mst_Main As MenuStrip
     Friend WithEvents Msm_Main As ToolStripMenuItem
-    Friend WithEvents Msm_ScanMods As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents Msm_Close As ToolStripMenuItem
     Friend WithEvents Msm_Filter As ToolStripMenuItem
@@ -334,5 +364,9 @@ Partial Class Frm_Main
     Friend WithEvents Txt_InfoBar As TextBox
     Friend WithEvents Msm_About As ToolStripMenuItem
     Friend WithEvents MenuItem_EditLocalAsset As ToolStripMenuItem
+    Friend WithEvents Msm_InstCustomAssets As ToolStripMenuItem
+    Friend WithEvents Lbl_Loading As Label
+    Friend WithEvents ProcLoading As Process
+    Friend WithEvents Chk_ShowEAI As CheckBox
 
 End Class
