@@ -4,7 +4,16 @@
     <_LastSelectedProfileId>F:\VB .NET FEDE\Asset Manager\Asset Manager\My Project\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Update="CustomMessageBox.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Frm_About.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Frm_AssetEditor.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Frm_ChangeCat.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Frm_InstCustomAssets.vb">

@@ -26,15 +26,27 @@ Partial Class Frm_Main
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Frm_Main))
         Lst_Img = New ListView()
         Ctx_Asset = New ContextMenuStrip(components)
-        MenuItem_DisableAsset = New ToolStripMenuItem()
         MenuItem_EnableAsset = New ToolStripMenuItem()
-        ToolStripSeparator3 = New ToolStripSeparator()
+        MenuItem_DisableAsset = New ToolStripMenuItem()
+        Ctx_SepEnDis = New ToolStripSeparator()
         MenuItem_OpenLocation = New ToolStripMenuItem()
-        ToolStripSeparator2 = New ToolStripSeparator()
+        Ctx_SepOpenLocal = New ToolStripSeparator()
         MenuItem_CreateLocalCopy = New ToolStripMenuItem()
         MenuItem_DeleteLocalAsset = New ToolStripMenuItem()
         MenuItem_RenameLocalAsset = New ToolStripMenuItem()
         MenuItem_EditLocalAsset = New ToolStripMenuItem()
+        Ctx_ChangeCat = New ToolStripMenuItem()
+        MenuItem_AssetProperties = New ToolStripMenuItem()
+        Ctx_SepBulk = New ToolStripSeparator()
+        Ctx_BulkOperations = New ToolStripMenuItem()
+        Ctx_Bulk_EnableAssets = New ToolStripMenuItem()
+        Ctx_Bulk_DisableAssets = New ToolStripMenuItem()
+        Ctx_Bulk_SepEnDis = New ToolStripSeparator()
+        Ctx_Bulk_DeleteAssets = New ToolStripMenuItem()
+        Ctx_Bulk_SepActions = New ToolStripSeparator()
+        Ctx_Bulk_SetUiPriority = New ToolStripMenuItem()
+        Ctx_Bulk_SetDrawOrder = New ToolStripMenuItem()
+        Ctx_Bulk_SetDLM = New ToolStripMenuItem()
         Cmb_Mods = New ComboBox()
         Cmb_AssetType = New ComboBox()
         Cmb_Cat = New ComboBox()
@@ -44,6 +56,7 @@ Partial Class Frm_Main
         Label2 = New Label()
         Label3 = New Label()
         ToolTips = New ToolTip(components)
+        Btn_GoLocal = New Button()
         Mst_Main = New MenuStrip()
         Msm_Main = New ToolStripMenuItem()
         Msm_InstCustomAssets = New ToolStripMenuItem()
@@ -54,7 +67,6 @@ Partial Class Frm_Main
         Msm_About = New ToolStripMenuItem()
         Txt_InfoBar = New TextBox()
         Lbl_Loading = New Label()
-        ProcLoading = New Process()
         Chk_ShowEAI = New CheckBox()
         Ctx_Asset.SuspendLayout()
         Mst_Main.SuspendLayout()
@@ -75,87 +87,176 @@ Partial Class Frm_Main
         ' 
         ' Ctx_Asset
         ' 
-        Ctx_Asset.Items.AddRange(New ToolStripItem() {MenuItem_DisableAsset, MenuItem_EnableAsset, ToolStripSeparator3, MenuItem_OpenLocation, ToolStripSeparator2, MenuItem_CreateLocalCopy, MenuItem_DeleteLocalAsset, MenuItem_RenameLocalAsset, MenuItem_EditLocalAsset})
+        Ctx_Asset.Items.AddRange(New ToolStripItem() {MenuItem_EnableAsset, MenuItem_DisableAsset, Ctx_SepEnDis, MenuItem_OpenLocation, Ctx_SepOpenLocal, MenuItem_CreateLocalCopy, MenuItem_DeleteLocalAsset, MenuItem_RenameLocalAsset, MenuItem_EditLocalAsset, Ctx_ChangeCat, MenuItem_AssetProperties, Ctx_SepBulk, Ctx_BulkOperations})
         Ctx_Asset.Name = "Ctx_Asset"
-        Ctx_Asset.Size = New Size(184, 170)
-        ' 
-        ' MenuItem_DisableAsset
-        ' 
-        MenuItem_DisableAsset.Name = "MenuItem_DisableAsset"
-        MenuItem_DisableAsset.Size = New Size(183, 22)
-        MenuItem_DisableAsset.Text = "Disable Asset"
+        Ctx_Asset.Size = New Size(198, 242)
         ' 
         ' MenuItem_EnableAsset
         ' 
         MenuItem_EnableAsset.Name = "MenuItem_EnableAsset"
-        MenuItem_EnableAsset.Size = New Size(183, 22)
+        MenuItem_EnableAsset.Size = New Size(197, 22)
         MenuItem_EnableAsset.Text = "Enable Asset"
+        MenuItem_EnableAsset.ToolTipText = "Will enable a disabled asset to allow it to load in game."
         ' 
-        ' ToolStripSeparator3
+        ' MenuItem_DisableAsset
         ' 
-        ToolStripSeparator3.Name = "ToolStripSeparator3"
-        ToolStripSeparator3.Size = New Size(180, 6)
+        MenuItem_DisableAsset.Name = "MenuItem_DisableAsset"
+        MenuItem_DisableAsset.Size = New Size(197, 22)
+        MenuItem_DisableAsset.Text = "Disable Asset"
+        MenuItem_DisableAsset.ToolTipText = "Will disable the asset, preventing it to load in game."
+        ' 
+        ' Ctx_SepEnDis
+        ' 
+        Ctx_SepEnDis.Name = "Ctx_SepEnDis"
+        Ctx_SepEnDis.Size = New Size(194, 6)
         ' 
         ' MenuItem_OpenLocation
         ' 
         MenuItem_OpenLocation.Name = "MenuItem_OpenLocation"
-        MenuItem_OpenLocation.Size = New Size(183, 22)
+        MenuItem_OpenLocation.Size = New Size(197, 22)
         MenuItem_OpenLocation.Text = "Open in File Explorer"
+        MenuItem_OpenLocation.ToolTipText = "Will open the folder location of the asset in File Explorer."
         ' 
-        ' ToolStripSeparator2
+        ' Ctx_SepOpenLocal
         ' 
-        ToolStripSeparator2.Name = "ToolStripSeparator2"
-        ToolStripSeparator2.Size = New Size(180, 6)
+        Ctx_SepOpenLocal.Name = "Ctx_SepOpenLocal"
+        Ctx_SepOpenLocal.Size = New Size(194, 6)
         ' 
         ' MenuItem_CreateLocalCopy
         ' 
         MenuItem_CreateLocalCopy.Name = "MenuItem_CreateLocalCopy"
-        MenuItem_CreateLocalCopy.Size = New Size(183, 22)
+        MenuItem_CreateLocalCopy.Size = New Size(197, 22)
         MenuItem_CreateLocalCopy.Text = "Create Local Copy"
+        MenuItem_CreateLocalCopy.ToolTipText = "Create a local copy from a mod asset." & vbCrLf & vbCrLf & "Local copies of asset can be edited."
         ' 
         ' MenuItem_DeleteLocalAsset
         ' 
         MenuItem_DeleteLocalAsset.Name = "MenuItem_DeleteLocalAsset"
-        MenuItem_DeleteLocalAsset.Size = New Size(183, 22)
+        MenuItem_DeleteLocalAsset.Size = New Size(197, 22)
         MenuItem_DeleteLocalAsset.Text = "Delete Local Asset"
+        MenuItem_DeleteLocalAsset.ToolTipText = "Use to delete a local asset." & vbCrLf & vbCrLf & "Will sent it to the Recycle Bin."
         ' 
         ' MenuItem_RenameLocalAsset
         ' 
         MenuItem_RenameLocalAsset.Name = "MenuItem_RenameLocalAsset"
-        MenuItem_RenameLocalAsset.Size = New Size(183, 22)
+        MenuItem_RenameLocalAsset.Size = New Size(197, 22)
         MenuItem_RenameLocalAsset.Text = "Rename Local Asset"
+        MenuItem_RenameLocalAsset.ToolTipText = "Use to rename local assets."
         ' 
         ' MenuItem_EditLocalAsset
         ' 
         MenuItem_EditLocalAsset.Name = "MenuItem_EditLocalAsset"
-        MenuItem_EditLocalAsset.Size = New Size(183, 22)
+        MenuItem_EditLocalAsset.Size = New Size(197, 22)
         MenuItem_EditLocalAsset.Text = "Edit Asset Properties"
+        MenuItem_EditLocalAsset.ToolTipText = "Open the Asset Editor."
+        ' 
+        ' Ctx_ChangeCat
+        ' 
+        Ctx_ChangeCat.Name = "Ctx_ChangeCat"
+        Ctx_ChangeCat.Size = New Size(197, 22)
+        Ctx_ChangeCat.Text = "Change Asset Category"
+        Ctx_ChangeCat.ToolTipText = "Open the asset category selector."
+        ' 
+        ' MenuItem_AssetProperties
+        ' 
+        MenuItem_AssetProperties.Name = "MenuItem_AssetProperties"
+        MenuItem_AssetProperties.Size = New Size(197, 22)
+        MenuItem_AssetProperties.Text = "View Asset Json"
+        MenuItem_AssetProperties.ToolTipText = "Open asset JSON file as plain text to read it's content as is."
+        ' 
+        ' Ctx_SepBulk
+        ' 
+        Ctx_SepBulk.Name = "Ctx_SepBulk"
+        Ctx_SepBulk.Size = New Size(194, 6)
+        ' 
+        ' Ctx_BulkOperations
+        ' 
+        Ctx_BulkOperations.DropDownItems.AddRange(New ToolStripItem() {Ctx_Bulk_EnableAssets, Ctx_Bulk_DisableAssets, Ctx_Bulk_SepEnDis, Ctx_Bulk_DeleteAssets, Ctx_Bulk_SepActions, Ctx_Bulk_SetUiPriority, Ctx_Bulk_SetDrawOrder, Ctx_Bulk_SetDLM})
+        Ctx_BulkOperations.Name = "Ctx_BulkOperations"
+        Ctx_BulkOperations.Size = New Size(197, 22)
+        Ctx_BulkOperations.Text = "Bulk Actions"
+        Ctx_BulkOperations.ToolTipText = "This will allow to do bulk actions on all the selected" & vbCrLf & "assets."
+        ' 
+        ' Ctx_Bulk_EnableAssets
+        ' 
+        Ctx_Bulk_EnableAssets.Name = "Ctx_Bulk_EnableAssets"
+        Ctx_Bulk_EnableAssets.Size = New Size(195, 22)
+        Ctx_Bulk_EnableAssets.Text = "Enable Selected Assets"
+        Ctx_Bulk_EnableAssets.ToolTipText = "This will enable all the selected assets."
+        ' 
+        ' Ctx_Bulk_DisableAssets
+        ' 
+        Ctx_Bulk_DisableAssets.Name = "Ctx_Bulk_DisableAssets"
+        Ctx_Bulk_DisableAssets.Size = New Size(195, 22)
+        Ctx_Bulk_DisableAssets.Text = "Disable Selected Assets"
+        Ctx_Bulk_DisableAssets.ToolTipText = "This will disable all the selected assets."
+        ' 
+        ' Ctx_Bulk_SepEnDis
+        ' 
+        Ctx_Bulk_SepEnDis.Name = "Ctx_Bulk_SepEnDis"
+        Ctx_Bulk_SepEnDis.Size = New Size(192, 6)
+        ' 
+        ' Ctx_Bulk_DeleteAssets
+        ' 
+        Ctx_Bulk_DeleteAssets.Name = "Ctx_Bulk_DeleteAssets"
+        Ctx_Bulk_DeleteAssets.Size = New Size(195, 22)
+        Ctx_Bulk_DeleteAssets.Text = "Delete Selected Assets"
+        Ctx_Bulk_DeleteAssets.ToolTipText = "This will delete all the selected assets." & vbCrLf & vbCrLf & "The folders will be sent to the Recycle Bin."
+        ' 
+        ' Ctx_Bulk_SepActions
+        ' 
+        Ctx_Bulk_SepActions.Name = "Ctx_Bulk_SepActions"
+        Ctx_Bulk_SepActions.Size = New Size(192, 6)
+        ' 
+        ' Ctx_Bulk_SetUiPriority
+        ' 
+        Ctx_Bulk_SetUiPriority.Name = "Ctx_Bulk_SetUiPriority"
+        Ctx_Bulk_SetUiPriority.Size = New Size(195, 22)
+        Ctx_Bulk_SetUiPriority.Text = "Set UiPriority"
+        Ctx_Bulk_SetUiPriority.ToolTipText = "Use this to change the UiPriority of all the" & vbCrLf & "selected assets." & vbCrLf & vbCrLf & "The UiPriority will start by alphabetical order" & vbCrLf & "increasing the starting number by one."
+        ' 
+        ' Ctx_Bulk_SetDrawOrder
+        ' 
+        Ctx_Bulk_SetDrawOrder.Name = "Ctx_Bulk_SetDrawOrder"
+        Ctx_Bulk_SetDrawOrder.Size = New Size(195, 22)
+        Ctx_Bulk_SetDrawOrder.Text = "Set Draw Order"
+        Ctx_Bulk_SetDrawOrder.ToolTipText = "Use this to set the same Draw Order to all the" & vbCrLf & "selected assets." & vbCrLf & vbCrLf & "The allowed values go from -170 to 200."
+        ' 
+        ' Ctx_Bulk_SetDLM
+        ' 
+        Ctx_Bulk_SetDLM.Name = "Ctx_Bulk_SetDLM"
+        Ctx_Bulk_SetDLM.Size = New Size(195, 22)
+        Ctx_Bulk_SetDLM.Text = "Set Decal Layer Mask"
+        Ctx_Bulk_SetDLM.ToolTipText = "This will set the same Decal Layer Mask to all" & vbCrLf & "the selected assets." & vbCrLf & vbCrLf & "Read the instructions in the input window."
         ' 
         ' Cmb_Mods
         ' 
         Cmb_Mods.FormattingEnabled = True
         Cmb_Mods.Location = New Point(221, 32)
         Cmb_Mods.Name = "Cmb_Mods"
-        Cmb_Mods.Size = New Size(300, 23)
+        Cmb_Mods.Size = New Size(336, 23)
         Cmb_Mods.TabIndex = 1
+        Cmb_Mods.TabStop = False
         ToolTips.SetToolTip(Cmb_Mods, "List of subscribed mods that contain decals, netlanes or surfaces to be managed.")
         ' 
         ' Cmb_AssetType
         ' 
         Cmb_AssetType.FormattingEnabled = True
-        Cmb_AssetType.Location = New Point(618, 32)
+        Cmb_AssetType.Location = New Point(870, 32)
         Cmb_AssetType.Name = "Cmb_AssetType"
-        Cmb_AssetType.Size = New Size(171, 23)
+        Cmb_AssetType.Size = New Size(108, 23)
         Cmb_AssetType.TabIndex = 3
+        Cmb_AssetType.TabStop = False
         ToolTips.SetToolTip(Cmb_AssetType, "Type of assets to manage:" & vbCrLf & "- Decals" & vbCrLf & "- Netlanes" & vbCrLf & "- Surfaces" & vbCrLf & vbCrLf & "Only existing type will be shown in the list.")
         ' 
         ' Cmb_Cat
         ' 
         Cmb_Cat.FormattingEnabled = True
-        Cmb_Cat.Location = New Point(909, 32)
+        Cmb_Cat.Location = New Point(1098, 32)
         Cmb_Cat.Name = "Cmb_Cat"
-        Cmb_Cat.Size = New Size(206, 23)
+        Cmb_Cat.Size = New Size(152, 23)
         Cmb_Cat.TabIndex = 4
+        Cmb_Cat.TabStop = False
         ToolTips.SetToolTip(Cmb_Cat, "List of assets categories." & vbCrLf & vbCrLf & "Only available categories will be shown in the list.")
         ' 
         ' Btn_DisableSelectedItems
@@ -196,7 +297,7 @@ Partial Class Frm_Main
         ' Label2
         ' 
         Label2.AutoSize = True
-        Label2.Location = New Point(547, 37)
+        Label2.Location = New Point(799, 37)
         Label2.Name = "Label2"
         Label2.Size = New Size(65, 15)
         Label2.TabIndex = 8
@@ -205,11 +306,23 @@ Partial Class Frm_Main
         ' Label3
         ' 
         Label3.AutoSize = True
-        Label3.Location = New Point(814, 37)
+        Label3.Location = New Point(1003, 37)
         Label3.Name = "Label3"
         Label3.Size = New Size(89, 15)
         Label3.TabIndex = 9
         Label3.Text = "Asset Category:"
+        ' 
+        ' Btn_GoLocal
+        ' 
+        Btn_GoLocal.ImageAlign = ContentAlignment.MiddleLeft
+        Btn_GoLocal.Location = New Point(563, 31)
+        Btn_GoLocal.Name = "Btn_GoLocal"
+        Btn_GoLocal.Size = New Size(113, 25)
+        Btn_GoLocal.TabIndex = 15
+        Btn_GoLocal.Text = "EAI Local Assets"
+        Btn_GoLocal.TextAlign = ContentAlignment.MiddleRight
+        ToolTips.SetToolTip(Btn_GoLocal, "Select Extra Assets Importer (Local Assets) mod from the listed mods.")
+        Btn_GoLocal.UseVisualStyleBackColor = True
         ' 
         ' Mst_Main
         ' 
@@ -232,6 +345,7 @@ Partial Class Frm_Main
         Msm_InstCustomAssets.Name = "Msm_InstCustomAssets"
         Msm_InstCustomAssets.Size = New Size(186, 22)
         Msm_InstCustomAssets.Text = "Install Custom Assets"
+        Msm_InstCustomAssets.ToolTipText = "This option will open the Custom Assets Installer." & vbCrLf & vbCrLf & "Is still in developement. May have bugs."
         ' 
         ' ToolStripSeparator1
         ' 
@@ -243,6 +357,7 @@ Partial Class Frm_Main
         Msm_Close.Name = "Msm_Close"
         Msm_Close.Size = New Size(186, 22)
         Msm_Close.Text = "Exit"
+        Msm_Close.ToolTipText = "Exit the program."
         ' 
         ' Msm_Filter
         ' 
@@ -286,26 +401,14 @@ Partial Class Frm_Main
         Lbl_Loading.TextAlign = ContentAlignment.MiddleCenter
         Lbl_Loading.Visible = False
         ' 
-        ' ProcLoading
-        ' 
-        ProcLoading.StartInfo.Domain = ""
-        ProcLoading.StartInfo.LoadUserProfile = False
-        ProcLoading.StartInfo.Password = Nothing
-        ProcLoading.StartInfo.StandardErrorEncoding = Nothing
-        ProcLoading.StartInfo.StandardInputEncoding = Nothing
-        ProcLoading.StartInfo.StandardOutputEncoding = Nothing
-        ProcLoading.StartInfo.UseCredentialsForNetworkingOnly = False
-        ProcLoading.StartInfo.UserName = ""
-        ProcLoading.SynchronizingObject = Me
-        ' 
         ' Chk_ShowEAI
         ' 
         Chk_ShowEAI.AutoSize = True
         Chk_ShowEAI.Location = New Point(15, 36)
         Chk_ShowEAI.Name = "Chk_ShowEAI"
-        Chk_ShowEAI.Size = New Size(84, 19)
+        Chk_ShowEAI.Size = New Size(80, 19)
         Chk_ShowEAI.TabIndex = 14
-        Chk_ShowEAI.Text = "EAI Sorting"
+        Chk_ShowEAI.Text = "EAI MODE"
         Chk_ShowEAI.UseVisualStyleBackColor = True
         ' 
         ' Frm_Main
@@ -313,6 +416,7 @@ Partial Class Frm_Main
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(1264, 681)
+        Controls.Add(Btn_GoLocal)
         Controls.Add(Chk_ShowEAI)
         Controls.Add(Lbl_Loading)
         Controls.Add(Txt_InfoBar)
@@ -328,7 +432,7 @@ Partial Class Frm_Main
         Controls.Add(Lst_Img)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         Name = "Frm_Main"
-        Text = "[G87] EAI Asset Manager - v1.4.1 r3 Beta"
+        Text = "[G87] EAI Asset Manager - v1.4.6.3 Beta"
         Ctx_Asset.ResumeLayout(False)
         Mst_Main.ResumeLayout(False)
         Mst_Main.PerformLayout()
@@ -358,15 +462,27 @@ Partial Class Frm_Main
     Friend WithEvents Msm_FiltersDisabledOnly As ToolStripMenuItem
     Friend WithEvents MenuItem_CreateLocalCopy As ToolStripMenuItem
     Friend WithEvents MenuItem_DeleteLocalAsset As ToolStripMenuItem
-    Friend WithEvents ToolStripSeparator3 As ToolStripSeparator
-    Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
+    Friend WithEvents Ctx_SepEnDis As ToolStripSeparator
+    Friend WithEvents Ctx_SepOpenLocal As ToolStripSeparator
     Friend WithEvents MenuItem_RenameLocalAsset As ToolStripMenuItem
     Friend WithEvents Txt_InfoBar As TextBox
     Friend WithEvents Msm_About As ToolStripMenuItem
     Friend WithEvents MenuItem_EditLocalAsset As ToolStripMenuItem
     Friend WithEvents Msm_InstCustomAssets As ToolStripMenuItem
     Friend WithEvents Lbl_Loading As Label
-    Friend WithEvents ProcLoading As Process
     Friend WithEvents Chk_ShowEAI As CheckBox
+    Friend WithEvents Btn_GoLocal As Button
+    Friend WithEvents MenuItem_AssetProperties As ToolStripMenuItem
+    Friend WithEvents Ctx_SepBulk As ToolStripSeparator
+    Friend WithEvents Ctx_BulkOperations As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_DeleteAssets As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_SetUiPriority As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_SetDrawOrder As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_SetDLM As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_EnableAssets As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_DisableAssets As ToolStripMenuItem
+    Friend WithEvents Ctx_Bulk_SepEnDis As ToolStripSeparator
+    Friend WithEvents Ctx_Bulk_SepActions As ToolStripSeparator
+    Friend WithEvents Ctx_ChangeCat As ToolStripMenuItem
 
 End Class

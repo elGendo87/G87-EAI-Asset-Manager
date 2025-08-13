@@ -48,6 +48,9 @@ Partial Class Frm_AssetEditor
         Lbl_Smoothness = New Label()
         Lbl_Metallic = New Label()
         Gbx_DecalSize = New GroupBox()
+        Lbl_Percent = New Label()
+        Txt_DecalScale = New TextBox()
+        Lbl_DecalScale = New Label()
         Chk_KeepAspectRatio = New CheckBox()
         Lbl_LockStatus = New Label()
         Txt_Z = New TextBox()
@@ -326,6 +329,9 @@ Partial Class Frm_AssetEditor
         ' 
         ' Gbx_DecalSize
         ' 
+        Gbx_DecalSize.Controls.Add(Lbl_Percent)
+        Gbx_DecalSize.Controls.Add(Txt_DecalScale)
+        Gbx_DecalSize.Controls.Add(Lbl_DecalScale)
         Gbx_DecalSize.Controls.Add(Chk_KeepAspectRatio)
         Gbx_DecalSize.Controls.Add(Lbl_LockStatus)
         Gbx_DecalSize.Controls.Add(Txt_Z)
@@ -342,15 +348,41 @@ Partial Class Frm_AssetEditor
         Gbx_DecalSize.Text = "Decal Size (?)"
         ToolTipAE.SetToolTip(Gbx_DecalSize, resources.GetString("Gbx_DecalSize.ToolTip"))
         ' 
+        ' Lbl_Percent
+        ' 
+        Lbl_Percent.AutoSize = True
+        Lbl_Percent.Location = New Point(130, 113)
+        Lbl_Percent.Name = "Lbl_Percent"
+        Lbl_Percent.Size = New Size(17, 15)
+        Lbl_Percent.TabIndex = 11
+        Lbl_Percent.Text = "%"
+        ' 
+        ' Txt_DecalScale
+        ' 
+        Txt_DecalScale.Location = New Point(68, 109)
+        Txt_DecalScale.MaxLength = 5
+        Txt_DecalScale.Name = "Txt_DecalScale"
+        Txt_DecalScale.Size = New Size(60, 23)
+        Txt_DecalScale.TabIndex = 10
+        ' 
+        ' Lbl_DecalScale
+        ' 
+        Lbl_DecalScale.AutoSize = True
+        Lbl_DecalScale.Location = New Point(6, 112)
+        Lbl_DecalScale.Name = "Lbl_DecalScale"
+        Lbl_DecalScale.Size = New Size(62, 15)
+        Lbl_DecalScale.TabIndex = 9
+        Lbl_DecalScale.Text = "Scale (x;z):"
+        ' 
         ' Chk_KeepAspectRatio
         ' 
         Chk_KeepAspectRatio.AutoSize = True
-        Chk_KeepAspectRatio.Location = New Point(10, 114)
+        Chk_KeepAspectRatio.Location = New Point(10, 138)
         Chk_KeepAspectRatio.Name = "Chk_KeepAspectRatio"
         Chk_KeepAspectRatio.Size = New Size(145, 19)
         Chk_KeepAspectRatio.TabIndex = 8
         Chk_KeepAspectRatio.Text = "Lock Aspect Ratio (x;z)"
-        ToolTipAE.SetToolTip(Chk_KeepAspectRatio, "This option will lock the aspect ratio to prevent the" & vbCrLf & "decal to be deformed when size is changed." & vbCrLf & vbCrLf & "Do not affect Height (y) value.")
+        ToolTipAE.SetToolTip(Chk_KeepAspectRatio, "This option will lock the aspect ratio to prevent the" & vbCrLf & "decal to be deformed when size is changed." & vbCrLf & vbCrLf & "Also will enable the Scale transform (%)." & vbCrLf & vbCrLf & "Do not affect Height (y) value.")
         Chk_KeepAspectRatio.UseVisualStyleBackColor = True
         ' 
         ' Lbl_LockStatus
@@ -481,7 +513,7 @@ Partial Class Frm_AssetEditor
         ' Txt_MeshSize
         ' 
         Txt_MeshSize.BorderStyle = BorderStyle.None
-        Txt_MeshSize.Location = New Point(71, 109)
+        Txt_MeshSize.Location = New Point(71, 113)
         Txt_MeshSize.MaxLength = 8
         Txt_MeshSize.Name = "Txt_MeshSize"
         Txt_MeshSize.ReadOnly = True
@@ -493,7 +525,7 @@ Partial Class Frm_AssetEditor
         ' Lbl_MeshSizeZ
         ' 
         Lbl_MeshSizeZ.AutoSize = True
-        Lbl_MeshSizeZ.Location = New Point(120, 109)
+        Lbl_MeshSizeZ.Location = New Point(120, 113)
         Lbl_MeshSizeZ.Name = "Lbl_MeshSizeZ"
         Lbl_MeshSizeZ.Size = New Size(61, 15)
         Lbl_MeshSizeZ.TabIndex = 8
@@ -513,7 +545,7 @@ Partial Class Frm_AssetEditor
         ' Lbl_MeshSizeM
         ' 
         Lbl_MeshSizeM.AutoSize = True
-        Lbl_MeshSizeM.Location = New Point(6, 109)
+        Lbl_MeshSizeM.Location = New Point(6, 113)
         Lbl_MeshSizeM.Name = "Lbl_MeshSizeM"
         Lbl_MeshSizeM.Size = New Size(57, 15)
         Lbl_MeshSizeM.TabIndex = 6
@@ -735,4 +767,7 @@ Partial Class Frm_AssetEditor
     Friend WithEvents Lbl_NormalOpacity As Label
     Friend WithEvents Nud_DrawOrder As NumericUpDown
     Friend WithEvents Nud_UiPriority As NumericUpDown
+    Friend WithEvents Lbl_Percent As Label
+    Friend WithEvents Txt_DecalScale As TextBox
+    Friend WithEvents Lbl_DecalScale As Label
 End Class
