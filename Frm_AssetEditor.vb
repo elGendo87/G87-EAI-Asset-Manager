@@ -1,10 +1,11 @@
-﻿Imports System.IO
+﻿Imports System.ComponentModel ' Required for BindingFlags
+Imports System.Drawing ' For Color
+Imports System.Globalization ' For CultureInfo.InvariantCulture
+Imports System.IO
+Imports System.Reflection
+Imports System.Text.RegularExpressions
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
-Imports System.Globalization ' For CultureInfo.InvariantCulture
-Imports System.Drawing ' For Color
-Imports System.Reflection
-Imports System.ComponentModel ' Required for BindingFlags
 
 Public Class Frm_AssetEditor
 
@@ -29,6 +30,11 @@ Public Class Frm_AssetEditor
     Private KeepRatio As Boolean = False
     Private SavedRatio As Double = 1
     Private isUpdating As Boolean = False
+
+    'Added for decal scale calculation v1.4.2
+    Private baseX As Double = 1
+    Private ignoreDecalEvent As Boolean = False
+
     Private Sub Frm_AssetEditor_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         ' Set the form title
         Me.Text = "Editing: " & AssetName
@@ -51,6 +57,13 @@ Public Class Frm_AssetEditor
 
         ' Disable Btn_Modify by default
         Btn_Modify.Enabled = False
+
+        'new txt decal scale v1.4.2
+        Txt_DecalScale.ShortcutsEnabled = False
+        Txt_DecalScale.Text = "100"
+        Txt_DecalScale.Enabled = False
+        Lbl_DecalScale.Enabled = False
+        Lbl_Percent.Enabled = False
 
         ' Attach TextChanged handlers to reset text color to black and enable Btn_Modify
         ' Txt_AssetName now has its own specific handler below
@@ -86,6 +99,7 @@ Public Class Frm_AssetEditor
         AddHandler Txt_Y.KeyPress, AddressOf HandleDecimalKeyPress
         AddHandler Txt_Z.KeyPress, AddressOf HandleDecimalKeyPress
         AddHandler Txt_MeshSize.KeyPress, AddressOf HandleDecimalKeyPress
+        AddHandler Txt_DecalScale.KeyPress, AddressOf HandleDecimalKeyPress 'new in v1.4.2
 
         ' Attach KeyPress handler for Nud_DrawOrder
         AddHandler Nud_DrawOrder.KeyPress, AddressOf HandleNUDSignedIntegerKeyPress ' Allows hyphen for negatives
@@ -117,7 +131,7 @@ Public Class Frm_AssetEditor
         ' Handle right-click context menu for textboxes and disable shortcuts
         Dim txtboxes As TextBox() = {Txt_AssetName, Txt_Metallic, Txt_Smoothness, Txt_MetallicOpacity,
                                     Txt_NormalOpacity, Txt_Roundness, Txt_colossal_UVScale, Txt_colossal_EdgeNormal, Txt_X, Txt_Y, Txt_Z,
-                                    Txt_MeshSize}
+                                    Txt_MeshSize, Txt_DecalScale}
 
         For Each txtbox In txtboxes
             AddHandler txtbox.MouseDown, AddressOf HandleRightClick ' Blocks right-click context menu
@@ -376,25 +390,82 @@ Public Class Frm_AssetEditor
         Dim correctionMessage = ""
         Dim correctedValue = ""
 
-        ' Try to parse the current value using CultureInfo.InvariantCulture
-        If Double.TryParse(textBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, currentValue) Then
-            If currentValue > 1.0 Then
-                needsCorrection = True
-                correctedValue = "1.0"
-                correctionMessage = "The value for " & textBox.Name & " cannot be greater than 1.0. It has been set to 1.0."
-            End If
-        Else ' If parsing fails (e.g., empty or invalid text)
-            needsCorrection = True
-            correctedValue = "0.0"
-            correctionMessage = "Invalid or empty value for " & textBox.Name & ". It has been set to 0.0."
-        End If
+        Select Case textBox.Name
 
-        If needsCorrection Then
-            textBox.Text = correctedValue
-            MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
-        End If
+            Case Txt_Metallic.Name, Txt_Smoothness.Name, Txt_MetallicOpacity.Name, Txt_NormalOpacity.Name
+
+                ' Try to parse the current value using CultureInfo.InvariantCulture
+                If Double.TryParse(textBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, currentValue) Then
+                    If currentValue > 1.0 Then
+                        needsCorrection = True
+                        correctedValue = "1.0"
+                        correctionMessage = "The value for " & textBox.Name & " cannot be greater than 1.0. It has been set to 1.0."
+                    End If
+                Else ' If parsing fails (e.g., empty or invalid text)
+                    needsCorrection = True
+                    correctedValue = "1.0"
+                    correctionMessage = "Invalid or empty value for " & textBox.Name & ". It has been set to 1.0."
+                End If
+
+                If needsCorrection = True Then
+                    textBox.Text = correctedValue
+                    MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                End If
+
+            Case Txt_Roundness.Name
+
+                'Special case for Txt_Roundness
+                If Double.TryParse(textBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, currentValue) Then
+                    If textBox.Name = Txt_Roundness.Name Then
+                        If currentValue > 1.0 Then
+                            needsCorrection = True
+                            correctedValue = "1.0"
+                            correctionMessage = "The value for " & textBox.Name & " cannot be greater than 1.0. It has been set to 1.0."
+                        End If
+                    Else ' If parsing fails (e.g., empty or invalid text)
+                        needsCorrection = True
+                        correctedValue = "0.5"
+                        correctionMessage = "Invalid or empty value for " & textBox.Name & ". It has been set to 0.5."
+
+                    End If
+
+                    If needsCorrection = True Then
+                        textBox.Text = correctedValue
+                        MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    End If
+
+                End If
+
+            Case Txt_colossal_EdgeNormal.Name
+                'Special case for Txt_colossal_EdgeNormal
+                If Double.TryParse(textBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, currentValue) Then
+                    If textBox.Name = Txt_colossal_EdgeNormal.Name Then
+                        If currentValue > 1.0 Then
+                            needsCorrection = True
+                            correctedValue = "1.0"
+                            correctionMessage = "The value for " & textBox.Name & " cannot be greater than 1.0. It has been set to 1.0."
+                        End If
+                    Else ' If parsing fails (e.g., empty or invalid text)
+                        needsCorrection = True
+                        correctedValue = "0.5"
+                        correctionMessage = "Invalid or empty value for " & textBox.Name & ". It has been set to 0.5."
+                    End If
+
+                    If needsCorrection = True Then
+                        textBox.Text = correctedValue
+                        MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    End If
+
+                End If
+        End Select
+
+        'If needsCorrection = "Generic" Or needsCorrection = "Roundness" Or needsCorrection = "EdgeNormal" Then
+        '    textBox.Text = correctedValue
+        '    MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        'End If
 
         EnableModifyButton() ' Always enable the modify button after user interaction
+
     End Sub
 
     ' LostFocus handler for Txt_X, Txt_Y, Txt_Z (dimension values)
@@ -434,15 +505,15 @@ Public Class Frm_AssetEditor
         If Double.TryParse(textBox.Text, NumberStyles.Any, CultureInfo.InvariantCulture, currentValue) Then
             If currentValue <= 0.0 Or currentValue > 2 Then
                 needsCorrection = True
-                correctionMessage = "UV Scale cannot be zero or bigger than 2. It has been set to 1.0."
+                correctionMessage = "UV Scale cannot be zero or bigger than 2. It has been set to 0.2."
             End If
         Else ' If parsing fails (e.g., empty or invalid text)
             needsCorrection = True
-            correctionMessage = "UV Scale is invalid or empty value. It has been set to 1.0."
+            correctionMessage = "UV Scale is invalid or empty value. It has been set to 0.2."
         End If
 
         If needsCorrection Then
-            textBox.Text = "1.0" ' Correct to 1.0 as string
+            textBox.Text = "0.2" ' Correct to 1.0 as string
             MessageBox.Show(correctionMessage, "Value Corrected", MessageBoxButtons.OK, MessageBoxIcon.Warning)
         End If
 
@@ -452,7 +523,7 @@ Public Class Frm_AssetEditor
     ' LostFocus handler for Txt_MeshSize
     Private Sub HandleMeshSizeValueLostFocus(sender As Object, e As EventArgs) Handles Txt_MeshSize.LostFocus
         Dim textBox As TextBox = DirectCast(sender, TextBox)
-        Dim currentValue As Double = 0.0
+        Dim currentValue As Double = 1.0
         Dim needsCorrection As Boolean = False
         Dim correctionMessage As String = ""
 
@@ -481,7 +552,7 @@ Public Class Frm_AssetEditor
         Dim currentValue As Integer = 0
         Dim needsCorrection As Boolean = False
         Dim correctionMessage As String = ""
-        Dim correctedValue As Integer = 1 ' Default value for UiPriority
+        Dim correctedValue As Integer = 0 ' EAI default value v1.4.3 r2
 
         If Integer.TryParse(nudControl.Text, currentValue) Then
             If currentValue < 0 OrElse currentValue > 99999999 Then
@@ -521,13 +592,10 @@ Public Class Frm_AssetEditor
             End If
         Else ' If parsing fails (e.g., empty or invalid text)
             needsCorrection = True
-            ' Determine default based on AssetType, similar to LoadAssetJsonData
-            If AssetType = "Surfaces" Then
-                correctedValue = -90
-            Else ' Decals or Netlanes
-                correctedValue = 1
-            End If
+
+            correctedValue = 0
             correctionMessage = "Draw Order is invalid or empty. It has been set to " & correctedValue.ToString() & "."
+
         End If
 
         If needsCorrection Then
@@ -598,15 +666,11 @@ Public Class Frm_AssetEditor
 
         ' --- 1. Pre-validation of all fields ---
         Dim parsedUiPriority As Integer
-        'If Not Integer.TryParse(Txt_UiPriority.Text, parsedUiPriority) OrElse parsedUiPriority < 0 OrElse parsedUiPriority > 99999999 Then
-        'MessageBox.Show("Invalid value for UiPriority. It must be a value between 0 and 99999999.", "uiPriority Value Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        'Return
-        'End If
+
         If Not Integer.TryParse(Nud_UiPriority.Text, parsedUiPriority) OrElse parsedUiPriority < 0 OrElse parsedUiPriority > 99999999 Then
             MessageBox.Show("Invalid value for UiPriority. It must be a value between 0 and 99999999.", "uiPriority Value Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End If
-
 
         Dim parsedMetallic As Double
         If Not Double.TryParse(Txt_Metallic.Text, NumberStyles.Any, CultureInfo.InvariantCulture, parsedMetallic) OrElse parsedMetallic < 0.0 OrElse parsedMetallic > 1.0 Then
@@ -633,18 +697,15 @@ Public Class Frm_AssetEditor
         End If
 
         Dim parsedDrawOrder As Integer 'modified to NumericUpDown control
-        'If Not Integer.TryParse(Txt_DrawOrder.Text, parsedDrawOrder) OrElse parsedDrawOrder < -170 OrElse parsedDrawOrder > 200 Then
-        'MessageBox.Show("Invalid value for _DrawOrder. It must be a value between -170 and 200.", "Draw Order Value Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        'Return
-        'End If
+
         If Not Integer.TryParse(Nud_DrawOrder.Text, parsedDrawOrder) OrElse parsedDrawOrder < -170 OrElse parsedDrawOrder > 200 Then
             MessageBox.Show("Invalid value for _DrawOrder. It must be a value between -170 and 200.", "Draw Order Value Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Return
         End If
 
-        Dim parsedRoundness As Double = 0.0 ' Default for non-surfaces
-        Dim parsedUVScale As Double = 1.0 ' Default for non-surfaces
-        Dim parsedEdgeNormal As Double = 0.0 ' Default for non-surfaces
+        Dim parsedRoundness As Double = 0.5 ' Default for surfaces // EAI default value v1.4.3 r2
+        Dim parsedUVScale As Double = 0.2 ' Default for surfaces // EAI default value v1.4.3 r2
+        Dim parsedEdgeNormal As Double = 0.5 ' Default for surfaces // EAI default value v1.4.3 r2
 
         If AssetType = "Surfaces" Then
             If Not Double.TryParse(Txt_Roundness.Text, NumberStyles.Any, CultureInfo.InvariantCulture, parsedRoundness) OrElse parsedRoundness < 0.0 OrElse parsedRoundness > 1.0 Then
@@ -661,9 +722,9 @@ Public Class Frm_AssetEditor
             End If
         End If
 
-        Dim parsedX As Double = 1.0 ' Default for non-decals/netlanes
-        Dim parsedY As Double = 1.0 ' Default for non-decals/netlanes
-        Dim parsedZ As Double = 1.0 ' Default for non-decals/netlanes
+        Dim parsedX As Double = 1.0 ' Default for non-decals/netlanes // EAI default value v1.4.3 r2
+        Dim parsedY As Double = 1.0 ' Default for non-decals/netlanes // EAI default value v1.4.3 r2
+        Dim parsedZ As Double = 1.0 ' Default for non-decals/netlanes // EAI default value v1.4.3 r2
 
         If AssetType = "Decals" OrElse AssetType = "Netlanes" Then
             If Not Double.TryParse(Txt_X.Text, NumberStyles.Any, CultureInfo.InvariantCulture, parsedX) OrElse parsedX = 0.0 Then
@@ -680,10 +741,7 @@ Public Class Frm_AssetEditor
             End If
         End If
 
-
-
-        ' --- 2. Prepare JSON file paths ---
-
+        ' 2. Prepare JSON file paths ---
         ' Ensure the asset folder is renamed before saving
         If Not RenameAssetFolder() Then
             Return ' If renaming fails, stop the saving process
@@ -706,117 +764,106 @@ Public Class Frm_AssetEditor
                 Return
         End Select
 
+        ' Start of JSON saving routine
         mainJsonPath = Path.Combine(AssetFullPath, jsonFileName)
 
-        ' --- 3. Update _assetJsonContent by rebuilding it to ensure correct order ---
+        ' --- Load the original JSON if not already done ---
+        If _assetJsonContent Is Nothing Then
+            _assetJsonContent = New JObject()
+        End If
+
         Try
+            ' --- REBUILD THE JObject TO ENSURE CORRECT PROPERTY ORDER ---
             Dim newAssetJsonContent As New JObject()
 
-            ' 1. Add UiPriority (always first at root)
+            ' 1. Add UiPriority (always first at the root)
             newAssetJsonContent.Add("UiPriority", parsedUiPriority)
 
-            ' 2. Add m_Roundness if Surfaces
+            ' 2. Add m_Roundness if Surfaces (second at the root)
             If AssetType = "Surfaces" Then
                 newAssetJsonContent.Add("m_Roundness", parsedRoundness)
             End If
 
-            ' 3. Add Float object
-            Dim floatObject As JObject = New JObject()
-            floatObject.Add("colossal_DecalLayerMask", Integer.Parse(Lbl_DlmValue.Text)) ' Lbl_DlmValue is already validated by its change handler
-            floatObject.Add("_Metallic", parsedMetallic)
-            floatObject.Add("_Smoothness", parsedSmoothness)
-            floatObject.Add("_MetallicOpacity", parsedMetallicOpacity)
-            floatObject.Add("_NormalOpacity", parsedNormalOpacity)
-            floatObject.Add("_DrawOrder", parsedDrawOrder)
+            ' 3. Get the existing "Float" and "Vector" objects from the original content
+            Dim originalFloatObject As JObject = Nothing
+            If _assetJsonContent.ContainsKey("Float") AndAlso _assetJsonContent("Float").Type = JTokenType.Object Then
+                originalFloatObject = DirectCast(_assetJsonContent("Float"), JObject).DeepClone()
+            Else
+                originalFloatObject = New JObject()
+            End If
 
+            Dim originalVectorObject As JObject = Nothing
+            If _assetJsonContent.ContainsKey("Vector") AndAlso _assetJsonContent("Vector").Type = JTokenType.Object Then
+                originalVectorObject = DirectCast(_assetJsonContent("Vector"), JObject).DeepClone()
+            Else
+                originalVectorObject = New JObject()
+            End If
+
+            ' 4. Update the values within the "Float" object
+            originalFloatObject("colossal_DecalLayerMask") = Integer.Parse(Lbl_DlmValue.Text)
+            originalFloatObject("_Metallic") = parsedMetallic
+            originalFloatObject("_Smoothness") = parsedSmoothness
+            originalFloatObject("_MetallicOpacity") = parsedMetallicOpacity
+            originalFloatObject("_NormalOpacity") = parsedNormalOpacity
+            originalFloatObject("_DrawOrder") = parsedDrawOrder
+
+            ' Update properties specific to "Surfaces"
             If AssetType = "Surfaces" Then
-
-
-                floatObject.Add("colossal_UVScale", parsedUVScale)
-                floatObject.Add("colossal_EdgeNormal", parsedEdgeNormal)
-
-                'Added to handle vector properties for Surfaces
-                ' Retrieve existing Vector properties from the original content
-                Dim existingVectorObject As JObject = New JObject()
-                If _assetJsonContent.ContainsKey("Vector") AndAlso _assetJsonContent("Vector").Type = JTokenType.Object Then
-                    existingVectorObject = DirectCast(_assetJsonContent("Vector"), JObject)
-                End If
-                newAssetJsonContent.Add("Float", floatObject)
-                newAssetJsonContent.Add("Vector", existingVectorObject)
-
+                originalFloatObject("colossal_UVScale") = parsedUVScale
+                originalFloatObject("colossal_EdgeNormal") = parsedEdgeNormal
             End If
 
-            If AssetType <> "Surfaces" Then ' If AssetType is Surface skip this because is added before
-                newAssetJsonContent.Add("Float", floatObject)
-            End If
+            ' 5. Remove any root-level properties from the float object that might be there
+            ' This ensures no duplicates, as UiPriority/m_Roundness are now at the root.
+            originalFloatObject.Remove("UiPriority")
+            originalFloatObject.Remove("m_Roundness")
 
-            ' 4. Add Vector object if Decals/Netlanes
+            ' 6. Update properties within the "Vector" object for Decals/Netlanes
             If AssetType = "Decals" OrElse AssetType = "Netlanes" Then
-                Dim vectorObject As JObject = New JObject()
-                Dim meshSizeObject As JObject = New JObject()
-
-                ' Retrieve existing Vector and colossal_MeshSize properties from the original content
-                Dim existingVectorObject As JObject = Nothing
-                If _assetJsonContent.ContainsKey("Vector") AndAlso _assetJsonContent("Vector").Type = JTokenType.Object Then
-                    existingVectorObject = DirectCast(_assetJsonContent("Vector"), JObject)
+                Dim meshSizeObject As JObject = Nothing
+                If originalVectorObject.ContainsKey("colossal_MeshSize") AndAlso originalVectorObject("colossal_MeshSize").Type = JTokenType.Object Then
+                    meshSizeObject = DirectCast(originalVectorObject("colossal_MeshSize"), JObject)
+                Else
+                    meshSizeObject = New JObject()
+                    originalVectorObject("colossal_MeshSize") = meshSizeObject
                 End If
 
-                If existingVectorObject IsNot Nothing AndAlso existingVectorObject.ContainsKey("colossal_MeshSize") AndAlso existingVectorObject("colossal_MeshSize").Type = JTokenType.Object Then
-                    ' Copy existing properties from colossal_MeshSize, then update x, y, z
-                    Dim originalMeshSizeObject As JObject = DirectCast(existingVectorObject("colossal_MeshSize"), JObject)
-                    For Each prop As JProperty In originalMeshSizeObject.Properties()
-                        meshSizeObject.Add(prop.Name, prop.Value)
-                    Next
-                End If
-
-                ' Update x, y, z
                 meshSizeObject("x") = parsedX
                 meshSizeObject("y") = parsedY
                 meshSizeObject("z") = parsedZ
-                ' Ensure 'w' exists, set to 0 if not present, or keep existing value
-                If Not meshSizeObject.ContainsKey("w") Then
+                If meshSizeObject("w") Is Nothing Then
                     meshSizeObject("w") = 0
                 End If
-                vectorObject.Add("colossal_MeshSize", meshSizeObject)
-
-                ' Copy other Vector properties if they exist in the original JSON
-                If existingVectorObject IsNot Nothing Then
-                    For Each prop As JProperty In existingVectorObject.Properties()
-                        If Not prop.Name.Equals("colossal_MeshSize", StringComparison.OrdinalIgnoreCase) Then
-                            vectorObject.Add(prop.Name, prop.Value)
-                        End If
-                    Next
-                End If
-                newAssetJsonContent.Add("Vector", vectorObject)
             End If
 
-            ' Copy other root-level properties from the original JSON that are not explicitly handled
+            ' 7. Add the updated Float and Vector objects to the new JObject
+            newAssetJsonContent.Add("Float", originalFloatObject)
+            newAssetJsonContent.Add("Vector", originalVectorObject)
+
+            ' 8. Copy the existing prefabIdentifierInfos array from the original JSON
+            If _assetJsonContent.ContainsKey("prefabIdentifierInfos") AndAlso _assetJsonContent("prefabIdentifierInfos").Type = JTokenType.Array Then
+                Dim originalPrefabInfoArray As JArray = DirectCast(_assetJsonContent("prefabIdentifierInfos"), JArray).DeepClone()
+                newAssetJsonContent.Add("prefabIdentifierInfos", originalPrefabInfoArray)
+            End If
+
+            ' 9. Copy any other root-level properties from the original JSON
+            '    that are not explicitly handled. This preserves all other data.
             For Each prop As JProperty In _assetJsonContent.Properties()
                 If Not (prop.Name.Equals("UiPriority", StringComparison.OrdinalIgnoreCase) OrElse
-                        prop.Name.Equals("m_Roundness", StringComparison.OrdinalIgnoreCase) OrElse
-                        prop.Name.Equals("Float", StringComparison.OrdinalIgnoreCase) OrElse
-                        prop.Name.Equals("Vector", StringComparison.OrdinalIgnoreCase)) Then
-                    newAssetJsonContent.Add(prop.Name, prop.Value)
+                    prop.Name.Equals("m_Roundness", StringComparison.OrdinalIgnoreCase) OrElse
+                    prop.Name.Equals("Float", StringComparison.OrdinalIgnoreCase) OrElse
+                    prop.Name.Equals("Vector", StringComparison.OrdinalIgnoreCase) OrElse
+                    prop.Name.Equals("prefabIdentifierInfos", StringComparison.OrdinalIgnoreCase)) Then
+                    newAssetJsonContent.Add(prop.Name, prop.Value.DeepClone())
                 End If
             Next
 
             _assetJsonContent = newAssetJsonContent ' Replace the old JObject with the newly constructed one.
 
-            ' --- Cleanup: Remove UiPriority/m_Roundness from old Float object if they were there ---
-            If _assetJsonContent.ContainsKey("Float") AndAlso _assetJsonContent("Float").Type = JTokenType.Object Then
-                Dim currentFloatObject As JObject = DirectCast(_assetJsonContent("Float"), JObject)
-                If currentFloatObject.ContainsKey("UiPriority") Then
-                    currentFloatObject.Remove("UiPriority")
-                End If
-                If AssetType = "Surfaces" AndAlso currentFloatObject.ContainsKey("m_Roundness") Then
-                    currentFloatObject.Remove("m_Roundness")
-                End If
-            End If
-
-            ' --- 4. Save main JSON file ---
+            ' --- 10. Save the main JSON file ---
             File.WriteAllText(mainJsonPath, _assetJsonContent.ToString(Formatting.Indented))
 
-            ' --- 5. Handle netlane.json for Netlanes asset type ---
+            ' --- 11. Handle netlane.json for Netlanes asset type (no changes) ---
             If AssetType = "Netlanes" Then
                 If _netlaneJsonContent Is Nothing Then
                     _netlaneJsonContent = New JObject()
@@ -826,7 +873,8 @@ Public Class Frm_AssetEditor
             End If
 
             MessageBox.Show(Txt_AssetName.Text & " saved successfully!", "Save Complete", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Btn_Modify.Enabled = False ' Disable modify button after successful save
+            Btn_Modify.Enabled = False
+            Me.Close() ' Close the form after saving
 
         Catch ex As Exception
             MessageBox.Show("Error saving" & Txt_AssetName.Text & " : " & ex.Message, "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -851,27 +899,72 @@ Public Class Frm_AssetEditor
                 MessageBox.Show("Unsupported asset type for editing: " & AssetType & vbCrLf & vbCrLf & "Operation will be terminated.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
                 Me.Close() ' Close the form if JSON parsing fails
                 Exit Sub
-                'Return
         End Select
 
         mainJsonPath = Path.Combine(AssetFullPath, jsonFileName)
 
-        ' Load the main JSON
+        ' FIXING JSON v.4.0.0
         If File.Exists(mainJsonPath) Then
+            Dim jsonText As String = ""
             Try
-                Dim jsonText As String = File.ReadAllText(mainJsonPath)
+                jsonText = File.ReadAllText(mainJsonPath)
                 _assetJsonContent = JObject.Parse(jsonText)
+
             Catch ex As Exception
-                MessageBox.Show("Error reading or parsing " & jsonFileName & ": " & ex.Message & vbCrLf & vbCrLf & "Operation will be terminated.", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-                Me.Close() ' Close the form if JSON parsing fails
-                Exit Sub
-                '_assetJsonContent = New JObject() ' Initialize as empty object to handle default values
+                MessageBox.Show("A syntax error was detected in the JSON file. Attempting an advanced repair...", "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+
+                ' Call the new repair function.
+                Dim repairedJsonText As String = RepairJsonWithFullTextAnalysis(jsonText)
+
+                Try
+                    ' Attempt to parse the pre-repaired JSON.
+                    _assetJsonContent = JObject.Parse(repairedJsonText)
+                    MessageBox.Show("The JSON file has been successfully repaired and loaded.", "JSON Repaired", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+                Catch ex2 As Exception
+                    MessageBox.Show("The current JSON file is corrupt and was impossible to repair." & vbCrLf & vbCrLf & "The operation will be terminated.", "Corrupt JSON", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    Me.Close()
+                    Exit Sub
+                End Try
             End Try
+
         Else
-            MessageBox.Show(jsonFileName & " not found for this asset." & vbCrLf & vbCrLf & "Operation will be terminated.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Me.Close() ' Close the form if JSON parsing fails
+            MessageBox.Show(jsonFileName & " was not found for this asset." & vbCrLf & vbCrLf & "The operation will be terminated.", "File Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Me.Close()
             Exit Sub
-            '_assetJsonContent = New JObject() ' Initialize as empty object to handle default values
+        End If
+        ' END FIXING JSON v.4.0.0
+
+        ' Load netlane.json if asset type is Netlane
+        If AssetType = "Netlanes" Then
+            If File.Exists(netlaneJsonPath) Then
+                Try
+                    Dim netlaneJsonText As String = File.ReadAllText(netlaneJsonPath)
+                    _netlaneJsonContent = JObject.Parse(netlaneJsonText)
+                Catch ex As Exception
+                    MessageBox.Show("Error reading or parsing netlane.json: " & ex.Message, "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    _netlaneJsonContent = New JObject() ' Initialize as empty object
+                End Try
+            Else
+                MessageBox.Show("netlane.json not found for this Netlane asset. It will be created with default values upon saving.", "netlane.json Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                _netlaneJsonContent = New JObject() ' Initialize as empty object so it's created on save
+            End If
+        End If
+
+        ' Load netlane.json if asset type is Netlane
+        If AssetType = "Netlanes" Then
+            If File.Exists(netlaneJsonPath) Then
+                Try
+                    Dim netlaneJsonText As String = File.ReadAllText(netlaneJsonPath)
+                    _netlaneJsonContent = JObject.Parse(netlaneJsonText)
+                Catch ex As Exception
+                    MessageBox.Show("Error reading or parsing netlane.json: " & ex.Message, "JSON Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                    _netlaneJsonContent = New JObject() ' Initialize as empty object
+                End Try
+            Else
+                MessageBox.Show("netlane.json not found for this Netlane asset. It will be created with default values upon saving.", "netlane.json Not Found", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                _netlaneJsonContent = New JObject() ' Initialize as empty object so it's created on save
+            End If
         End If
 
         ' Load netlane.json if asset type is Netlane
@@ -893,7 +986,7 @@ Public Class Frm_AssetEditor
         ' === Load values common to all asset types ===
         ' UiPriority (Try Root, then Float if not found)
         Dim uiPriorityFound As Boolean = False
-        Dim uiPriorityValue As Integer = 1 ' Default value
+        Dim uiPriorityValue As Integer = 0 'EAI default value v1.4.3
 
         If _assetJsonContent.ContainsKey("UiPriority") Then
             Dim token As JToken = _assetJsonContent("UiPriority")
@@ -918,13 +1011,6 @@ Public Class Frm_AssetEditor
             End If
         End If
 
-        'Txt_UiPriority.Text = uiPriorityValue.ToString()
-        'If Not uiPriorityFound Then
-        ' Txt_UiPriority.ForeColor = Color.Red
-        'Else
-        'Txt_UiPriority.ForeColor = Color.Black
-        'End If
-
         Nud_UiPriority.Text = uiPriorityValue.ToString()
         If Not uiPriorityFound Then
             Nud_UiPriority.ForeColor = Color.Red
@@ -935,23 +1021,23 @@ Public Class Frm_AssetEditor
 
         ' _Metallic (Nested under "Float")
         If floatObject IsNot Nothing Then
-            LoadDoubleValue(Txt_Metallic, floatObject, "_Metallic", 0.0)
+            LoadDoubleValue(Txt_Metallic, floatObject, "_Metallic", 1.0) 'EAI default value v1.4.3
         Else
-            Txt_Metallic.Text = 0.0.ToString(CultureInfo.InvariantCulture)
+            Txt_Metallic.Text = 1.0.ToString(CultureInfo.InvariantCulture)
             Txt_Metallic.ForeColor = Color.Red
         End If
 
         ' _Smoothness (Nested under "Float")
         If floatObject IsNot Nothing Then
-            LoadDoubleValue(Txt_Smoothness, floatObject, "_Smoothness", 0.0)
+            LoadDoubleValue(Txt_Smoothness, floatObject, "_Smoothness", 1.0) 'EAI default value v1.4.3
         Else
-            Txt_Smoothness.Text = 0.0.ToString(CultureInfo.InvariantCulture)
+            Txt_Smoothness.Text = 1.0.ToString(CultureInfo.InvariantCulture)
             Txt_Smoothness.ForeColor = Color.Red
         End If
 
         ' _MetallicOpacity (Nested under "Float")
         If floatObject IsNot Nothing Then
-            LoadDoubleValue(Txt_MetallicOpacity, floatObject, "_MetallicOpacity", 0.0)
+            LoadDoubleValue(Txt_MetallicOpacity, floatObject, "_MetallicOpacity", 1.0) 'EAI default value v1.4.3
         Else
             Txt_MetallicOpacity.Text = 1.0.ToString(CultureInfo.InvariantCulture)
             Txt_MetallicOpacity.ForeColor = Color.Red
@@ -959,19 +1045,15 @@ Public Class Frm_AssetEditor
 
         ' _NormalOpacity (Nested under "Float")
         If floatObject IsNot Nothing Then
-            LoadDoubleValue(Txt_NormalOpacity, floatObject, "_NormalOpacity", 0.0)
+            LoadDoubleValue(Txt_NormalOpacity, floatObject, "_NormalOpacity", 1.0) 'EAI default value v1.4.3
         Else
             Txt_NormalOpacity.Text = 1.0.ToString(CultureInfo.InvariantCulture)
             Txt_NormalOpacity.ForeColor = Color.Red
         End If
 
         ' _DrawOrder (Nested under "Float")
-        Dim defaultDrawOrder As Integer
-        If AssetType = "Surfaces" Then
-            defaultDrawOrder = -90
-        Else ' Decals or Netlanes
-            defaultDrawOrder = 1
-        End If
+        Dim defaultDrawOrder As Integer = 0 'EAI default value v1.4.3
+
         If floatObject IsNot Nothing Then
             'LoadIntegerValue(Txt_DrawOrder, floatObject, "_DrawOrder", defaultDrawOrder)
             LoadIntegerValueUpDown(Nud_DrawOrder, floatObject, "_DrawOrder", defaultDrawOrder)
@@ -984,7 +1066,7 @@ Public Class Frm_AssetEditor
         End If
 
         ' colossal_DecalLayerMask (Nested under "Float") - Moved outside the Select Case for common usage
-        Dim decalLayerMaskValue As Integer = 1 ' Default value
+        Dim decalLayerMaskValue As Integer = 1 'EAI default value v1.4.3
         Dim decalLayerMaskFound As Boolean = False
 
         If floatObject IsNot Nothing Then
@@ -999,13 +1081,12 @@ Public Class Frm_AssetEditor
         End If
         SetDecalLayerMaskCheckboxes(decalLayerMaskValue, decalLayerMaskFound)
 
-
         ' === Load specific values based on asset type ===
         Select Case AssetType
             Case "Surfaces"
                 ' m_Roundness (Try Root, then Float if not found)
                 Dim mRoundnessFound As Boolean = False
-                Dim mRoundnessValue As Double = 0.0 ' Default value
+                Dim mRoundnessValue As Double = 0.5 'EAI default value v1.4.3
 
                 If _assetJsonContent.ContainsKey("m_Roundness") Then
                     Dim token As JToken = _assetJsonContent("m_Roundness")
@@ -1034,34 +1115,102 @@ Public Class Frm_AssetEditor
 
                 ' colossal_UVScale (Nested under "Float")
                 If floatObject IsNot Nothing Then
-                    LoadDoubleValue(Txt_colossal_UVScale, floatObject, "colossal_UVScale", 1.0)
+                    LoadDoubleValue(Txt_colossal_UVScale, floatObject, "colossal_UVScale", 0.2) 'EAI default value v1.4.3
                 Else
-                    Txt_colossal_UVScale.Text = 1.0.ToString(CultureInfo.InvariantCulture)
+                    Txt_colossal_UVScale.Text = 0.2.ToString(CultureInfo.InvariantCulture)
                     Txt_colossal_UVScale.ForeColor = Color.Red
                 End If
                 ' colossal_EdgeNormal (Nested under "Float")
                 If floatObject IsNot Nothing Then
-                    LoadDoubleValue(Txt_colossal_EdgeNormal, floatObject, "colossal_EdgeNormal", 0.0)
+                    LoadDoubleValue(Txt_colossal_EdgeNormal, floatObject, "colossal_EdgeNormal", 0.5) 'EAI default value v1.4.3
                 Else
-                    Txt_colossal_EdgeNormal.Text = 0.0.ToString(CultureInfo.InvariantCulture)
+                    Txt_colossal_EdgeNormal.Text = 0.5.ToString(CultureInfo.InvariantCulture)
                     Txt_colossal_EdgeNormal.ForeColor = Color.Red
                 End If
 
             Case "Decals", "Netlanes"
                 ' x, y, z (Nested under "Vector" -> "colossal_MeshSize")
                 ' Zero value check removed as per user's request to restore later
-                LoadNestedDoubleValue(Txt_X, _assetJsonContent, "Vector", "colossal_MeshSize", "x", 1.0) ' Default to 1.0
-                LoadNestedDoubleValue(Txt_Y, _assetJsonContent, "Vector", "colossal_MeshSize", "y", 1.0) ' Default to 1.0
-                LoadNestedDoubleValue(Txt_Z, _assetJsonContent, "Vector", "colossal_MeshSize", "z", 1.0) ' Default to 1.0
+                LoadNestedDoubleValue(Txt_X, _assetJsonContent, "Vector", "colossal_MeshSize", "x", 1.0) 'EAI default value v1.4.3
+                LoadNestedDoubleValue(Txt_Y, _assetJsonContent, "Vector", "colossal_MeshSize", "y", 1.0) 'EAI default value v1.4.3
+                LoadNestedDoubleValue(Txt_Z, _assetJsonContent, "Vector", "colossal_MeshSize", "z", 1.0) 'EAI default value v1.4.3
 
                 ' For Netlanes, UiPriority also in netlane.json
                 If AssetType = "Netlanes" Then
                     ' Ensure _netlaneJsonContent is not Nothing if it was created empty
                     If _netlaneJsonContent Is Nothing Then _netlaneJsonContent = New JObject()
-                    LoadIntegerValueUpDown(Nud_UiPriority, _netlaneJsonContent, "UiPriority", 1) ' Load from netlane.json
+                    LoadIntegerValueUpDown(Nud_UiPriority, _netlaneJsonContent, "UiPriority", 0) ' Load from netlane.json EAI default value v1.4.3
                 End If
         End Select
     End Sub
+
+    ' New function for a smarter JSON repair. GEMINI
+    Private Function RepairJsonWithFullTextAnalysis(ByVal json As String) As String
+        ' Step 1: Basic cleaning of comments and extra spaces.
+        Dim cleanedJson As String = System.Text.RegularExpressions.Regex.Replace(json, "//.*", "")
+        cleanedJson = System.Text.RegularExpressions.Regex.Replace(cleanedJson, "/\*.*?\*/", "", System.Text.RegularExpressions.RegexOptions.Singleline)
+
+        ' Step 2: Replace commas with dots in numeric values.
+        ' This corrects the "0,0" error.
+        cleanedJson = System.Text.RegularExpressions.Regex.Replace(cleanedJson, """(\w+)"":\s*(\d+),(\d+)", """$1"": $2.$3")
+
+        ' Step 3: Split the text into lines for a detailed inspection.
+        Dim lines As String() = cleanedJson.Split(New String() {vbCrLf, vbLf}, StringSplitOptions.None)
+        Dim repairedLines As New List(Of String)()
+
+        ' Step 4: Iterate through the lines to correct commas.
+        ' We maintain a simple state to know if we are inside a container.
+        Dim previousLineEndsWithValue As Boolean = False
+
+        For i As Integer = 0 To lines.Length - 1
+            Dim currentLine As String = lines(i).Trim()
+
+            If String.IsNullOrWhiteSpace(currentLine) Then
+                Continue For ' Skip empty lines.
+            End If
+
+            ' Check if the previous line needs a comma.
+            If previousLineEndsWithValue Then
+                ' The previous line ended with a value or a closed container,
+                ' and this line is not a closing brace, so it needs a comma.
+                Dim lastIndex As Integer = repairedLines.Count - 1
+                If lastIndex >= 0 Then
+                    ' Verify that the current line is not a closing brace,
+                    ' nor a closing bracket.
+                    If Not currentLine.StartsWith("}") AndAlso Not currentLine.StartsWith("]") Then
+                        ' Ensure that the previous line doesn't already end with a comma.
+                        If Not repairedLines(lastIndex).EndsWith(",") Then
+                            repairedLines(lastIndex) &= ","
+                        End If
+                    End If
+                End If
+            End If
+
+            repairedLines.Add(currentLine)
+
+            ' Reset the flag for the next iteration.
+            previousLineEndsWithValue = False
+
+            ' Check if the current line ends with a value, a closed object, or a closed array.
+            ' If so, the next line might need a comma.
+            If currentLine.EndsWith("""") OrElse
+           currentLine.EndsWith("}") OrElse
+           currentLine.EndsWith("]") OrElse
+           System.Text.RegularExpressions.Regex.IsMatch(currentLine, "\d+$") OrElse
+           currentLine.EndsWith("true") OrElse currentLine.EndsWith("false") OrElse currentLine.EndsWith("null") Then
+                previousLineEndsWithValue = True
+            End If
+
+            ' Exception: if the current line is an opening brace, there is no comma.
+            If currentLine.EndsWith("{") OrElse currentLine.EndsWith("[") Then
+                previousLineEndsWithValue = False
+            End If
+
+        Next
+
+        ' Step 5: Join the corrected lines into a single string.
+        Return String.Join(Environment.NewLine, repairedLines)
+    End Function
 
     ' Helper to load Double values from a JObject to a TextBox
     Private Sub LoadDoubleValue(targetTextBox As TextBox, jsonObject As JObject, key As String, defaultValue As Double)
@@ -1296,6 +1445,22 @@ Public Class Frm_AssetEditor
                               "   —" & vbCrLf &
                               "—┘"
         End If
+
+        'added for decal scale calculation v1.4.2
+        If Chk_KeepAspectRatio.Checked Then
+            Txt_DecalScale.Enabled = True
+            Lbl_DecalScale.Enabled = True
+            Lbl_Percent.Enabled = True
+            If Double.TryParse(Txt_X.Text.Replace(",", "."), NumberStyles.Any, CultureInfo.InvariantCulture, baseX) Then
+                Txt_DecalScale.Text = "100"
+            End If
+        Else
+            Txt_DecalScale.Enabled = False
+            Txt_DecalScale.Text = ""
+            Lbl_DecalScale.Enabled = False
+            Lbl_Percent.Enabled = False
+        End If
+
     End Sub
     Private Sub txt_x_TextChanged(sender As Object, e As EventArgs) Handles Txt_X.TextChanged
         If Not KeepRatio OrElse isUpdating Then Exit Sub
@@ -1311,6 +1476,14 @@ Public Class Frm_AssetEditor
             Txt_Z.Text = z.ToString("0.######", CultureInfo.InvariantCulture)
 
             isUpdating = False
+
+            'added decal scale calculation v1.4.2
+            If KeepRatio AndAlso baseX <> 0 Then
+                Dim porcentaje As Double = (x / baseX) * 100.0
+                ignoreDecalEvent = True
+                Txt_DecalScale.Text = porcentaje.ToString("0.##", CultureInfo.InvariantCulture)
+                ignoreDecalEvent = False
+            End If
         Else
             Return
         End If
@@ -1330,12 +1503,18 @@ Public Class Frm_AssetEditor
             Txt_X.Text = x.ToString("0.######", CultureInfo.InvariantCulture)
 
             isUpdating = False
+
+            'added for decal scale calculation v1.4.2
+            If KeepRatio AndAlso baseX <> 0 Then
+                Dim porcentaje As Double = (x / baseX) * 100.0
+                ignoreDecalEvent = True
+                Txt_DecalScale.Text = porcentaje.ToString("0.##", CultureInfo.InvariantCulture)
+                ignoreDecalEvent = False
+            End If
         Else
             Return
         End If
     End Sub
-
-
 
     ' Surfaces colossal_UVScale calculator and controls
     Private Sub Chk_CalcUV_CheckedChanged(sender As Object, e As EventArgs) Handles Chk_CalcUV.CheckedChanged
@@ -1405,4 +1584,32 @@ Public Class Frm_AssetEditor
         End If
     End Sub
 
+    ' Decal Scale calculator and controls
+    Private Sub Txt_DecalScale_TextChanged(sender As Object, e As EventArgs) Handles Txt_DecalScale.TextChanged
+        If Not Chk_KeepAspectRatio.Checked OrElse isUpdating OrElse ignoreDecalEvent Then Exit Sub
+
+        Dim inputScale As String = Txt_DecalScale.Text.Replace(",", ".")
+
+        If inputScale.Length > 8 Then
+            inputScale = inputScale.Substring(0, 8)
+            Txt_DecalScale.Text = inputScale
+            Txt_DecalScale.SelectionStart = Txt_DecalScale.Text.Length
+        End If
+
+        If Double.TryParse(inputScale, NumberStyles.Any, CultureInfo.InvariantCulture, Nothing) Then
+            Dim ScalePercent As Double = Convert.ToDouble(inputScale, CultureInfo.InvariantCulture)
+
+            If ScalePercent > 0 Then
+                Dim newX As Double = baseX * (ScalePercent / 100.0)
+                Dim newZ As Double = newX / SavedRatio
+
+                If newX > 0 AndAlso newZ > 0 Then
+                    isUpdating = True
+                    Txt_X.Text = newX.ToString("0.##", CultureInfo.InvariantCulture)
+                    Txt_Z.Text = newZ.ToString("0.##", CultureInfo.InvariantCulture)
+                    isUpdating = False
+                End If
+            End If
+        End If
+    End Sub
 End Class

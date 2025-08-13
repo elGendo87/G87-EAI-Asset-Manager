@@ -1,9 +1,18 @@
 ﻿Imports System.IO
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports ImageProcessor ' to load and handle images
+Imports ImageProcessor.Imaging.Formats
+Imports System.Windows.Forms.Design ' for image format handling
 
 Module ModScanner
+    ' Application settings structure
+    Public Structure AppSettings
+        ' Property to save the state of the Chk_ShowEAI checkbox
+        Public Property ShowEAI As Boolean
+    End Structure
 
+    ' Structure to hold mod information
     Public Structure ModInfo
         Public Property DisplayName As String
         Public Property RootPath As String
@@ -24,6 +33,10 @@ Module ModScanner
 
     End Structure
 
+    ' A new boolean flag to manage when to process selection events
+    Public isRestoringSelections As Boolean = False
+    Public isFirstLoad As Boolean = False
+
     Public IsFilterDisabledOnlyActive As Boolean = False
 
     Public allModFoldersCache As New List(Of ModInfo)()
@@ -43,7 +56,46 @@ Module ModScanner
             Return Text
         End Function
     End Class
-    Public Sub LoadingStart()
+
+    ' Save application settings to a JSON file v1.4.4
+    Public Sub SaveSettings()
+        Try
+            ' Create a new AppSettings object with the current checkbox state
+            Dim settings As New AppSettings With {.ShowEAI = Frm_Main.Chk_ShowEAI.Checked}
+            ' Serialize the object to a JSON string with indentation
+            Dim json As String = JsonConvert.SerializeObject(settings, Formatting.Indented)
+            ' Get the full path for the settings file
+            Dim filePath As String = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json")
+            ' Write the JSON string to the file
+            File.WriteAllText(filePath, json)
+        Catch ex As Exception
+            ' Display an error message if saving fails
+            MessageBox.Show("Error saving settings: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ' Load application settings from a JSON file v1.4.4
+    Public Sub LoadSettings()
+        ' Get the full path for the settings file
+        Dim filePath As String = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json")
+        ' Check if the settings file exists
+        If File.Exists(filePath) Then
+            Try
+                ' Read the entire JSON file content
+                Dim json As String = File.ReadAllText(filePath)
+                ' Deserialize the JSON string into an AppSettings object
+                Dim settings As AppSettings = JsonConvert.DeserializeObject(Of AppSettings)(json)
+                ' Apply the saved state to the checkbox
+                Frm_Main.Chk_ShowEAI.Checked = settings.ShowEAI
+            Catch ex As Exception
+                ' Display an error message if loading fails
+                MessageBox.Show("Error loading settings: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            End Try
+        End If
+    End Sub
+
+    ' Start the loading indicator and update the UI
+    Public Sub LoadingStart(ByVal callerFunctionName As String)
 
         Dim formWidth As Integer = Frm_Main.ClientSize.Width
         Dim formHeight As Integer = Frm_Main.ClientSize.Height
@@ -59,15 +111,19 @@ Module ModScanner
 
         Frm_Main.Update() ' Ensure the UI updates immediately
 
+        Debug.WriteLine(Now.ToString(format:="mm:ss:fff") & ": " & callerFunctionName)
+
     End Sub
 
-    Public Sub LoadingStop()
+    ' Stop the loading indicator and update the UI
+    Public Sub LoadingStop(ByVal callerFunctionName As String)
 
         Frm_Main.Lbl_Loading.Visible = False
 
         'Frm_Main.Lst_Img.Visible = True
 
         Frm_Main.Update() ' Ensure the UI updates immediately
+        Debug.WriteLine(Now.ToString(format:="mm:ss:fff") & ": " & callerFunctionName)
 
     End Sub
 
@@ -95,69 +151,144 @@ Module ModScanner
         End With
     End Sub
 
+    'Ask for the base scan directory mods_subscribed, either default or user selected
     Private Function GetBaseScanDirectory() As String
         Dim defaultLocalLowPath As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
         Dim appDataRoot As String = Path.GetDirectoryName(defaultLocalLowPath)
         Dim expectedModsPath As String = Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II\.cache\Mods\mods_subscribed")
 
+        'If Directory.Exists(expectedModsPath) Then
+        '    Return expectedModsPath
+        'Else
+        '    Dim result As DialogResult = MessageBox.Show(
+        '        "The 'mods_subscribed' folder was not found at the default location:" & Environment.NewLine &
+        '        expectedModsPath & Environment.NewLine & Environment.NewLine &
+        '        "Do you want to browse for it manually?",
+        '        "Mods Folder Not Found",
+        '        MessageBoxButtons.YesNo,
+        '        MessageBoxIcon.Question
+        '    )
+
+        '    If result = DialogResult.Yes Then
+        '        Using folderBrowserDialog As New FolderBrowserDialog()
+        '            folderBrowserDialog.Description = "Please select the 'mods_subscribed' folder for Cities Skylines II."
+        '            folderBrowserDialog.ShowNewFolderButton = False
+
+        '            If Directory.Exists(Path.GetDirectoryName(expectedModsPath)) Then
+        '                folderBrowserDialog.SelectedPath = Path.GetDirectoryName(expectedModsPath)
+        '            ElseIf Directory.Exists(Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")) Then
+        '                folderBrowserDialog.SelectedPath = Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")
+        '            ElseIf Directory.Exists(appDataRoot) Then
+        '                folderBrowserDialog.SelectedPath = appDataRoot
+        '            End If
+
+        '            If folderBrowserDialog.ShowDialog() = DialogResult.OK Then
+        '                If Path.GetFileName(folderBrowserDialog.SelectedPath).Equals("mods_subscribed", StringComparison.OrdinalIgnoreCase) Then
+        '                    Return folderBrowserDialog.SelectedPath
+        '                Else
+        '                    MessageBox.Show(
+        '                        "The selected folder is not 'mods_subscribed'. Please select the correct folder.",
+        '                        "Incorrect Folder",
+        '                        MessageBoxButtons.OK,
+        '                        MessageBoxIcon.Warning
+        '                    )
+        '                    Return Nothing
+        '                End If
+        '            Else
+        '                MessageBox.Show("No folder was selected. Scan operation cancelled.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        '                Return Nothing
+        '            End If
+        '        End Using
+        '    Else
+        '        MessageBox.Show("Scan operation cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        '        Return Nothing
+        '    End If
+        'End If
+
         If Directory.Exists(expectedModsPath) Then
             Return expectedModsPath
         Else
-            Dim result As DialogResult = MessageBox.Show(
-                "The 'mods_subscribed' folder was not found at the default location:" & Environment.NewLine &
-                expectedModsPath & Environment.NewLine & Environment.NewLine &
-                "Do you want to browse for it manually?",
-                "Mods Folder Not Found",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question
-            )
+            Dim userWantsToBrowse As Boolean = True
+            Dim selectedPath As String = Nothing
 
-            If result = DialogResult.Yes Then
-                Using folderBrowserDialog As New FolderBrowserDialog()
-                    folderBrowserDialog.Description = "Please select the 'mods_subscribed' folder for Cities Skylines II."
-                    folderBrowserDialog.ShowNewFolderButton = False
+            Do While userWantsToBrowse And String.IsNullOrEmpty(selectedPath)
+                Dim result As DialogResult = MessageBox.Show(
+                    "The 'mods_subscribed' folder was not found at the default location:" & Environment.NewLine &
+                    expectedModsPath & Environment.NewLine & Environment.NewLine &
+                    "Do you want to browse for it manually?",
+                    "Mods Folder Not Found",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question
+                )
 
-                    If Directory.Exists(Path.GetDirectoryName(expectedModsPath)) Then
-                        folderBrowserDialog.SelectedPath = Path.GetDirectoryName(expectedModsPath)
-                    ElseIf Directory.Exists(Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")) Then
-                        folderBrowserDialog.SelectedPath = Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")
-                    ElseIf Directory.Exists(appDataRoot) Then
-                        folderBrowserDialog.SelectedPath = appDataRoot
-                    End If
+                If result = DialogResult.Yes Then
+                    Using folderBrowserDialog As New FolderBrowserDialog()
+                        folderBrowserDialog.Description = "Please select the 'mods_subscribed' folder for Cities Skylines II."
+                        folderBrowserDialog.ShowNewFolderButton = False
 
-                    If folderBrowserDialog.ShowDialog() = DialogResult.OK Then
-                        If Path.GetFileName(folderBrowserDialog.SelectedPath).Equals("mods_subscribed", StringComparison.OrdinalIgnoreCase) Then
-                            Return folderBrowserDialog.SelectedPath
-                        Else
-                            MessageBox.Show(
-                                "The selected folder is not 'mods_subscribed'. Please select the correct folder.",
-                                "Incorrect Folder",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Warning
-                            )
-                            Return Nothing
+                        ' Try to set an initial directory for the dialog
+                        If Directory.Exists(Path.GetDirectoryName(expectedModsPath)) Then
+                            folderBrowserDialog.SelectedPath = Path.GetDirectoryName(expectedModsPath)
+                        ElseIf Directory.Exists(Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")) Then
+                            folderBrowserDialog.SelectedPath = Path.Combine(appDataRoot, "LocalLow\Colossal Order\Cities Skylines II")
+                        ElseIf Directory.Exists(appDataRoot) Then
+                            folderBrowserDialog.SelectedPath = appDataRoot
                         End If
-                    Else
-                        MessageBox.Show("No folder was selected. Scan operation cancelled.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                        Return Nothing
-                    End If
-                End Using
+
+                        ' Show the dialog and process the result
+                        If folderBrowserDialog.ShowDialog() = DialogResult.OK Then
+                            If Path.GetFileName(folderBrowserDialog.SelectedPath).Equals("mods_subscribed", StringComparison.OrdinalIgnoreCase) Then
+                                ' User selected the correct folder
+                                selectedPath = folderBrowserDialog.SelectedPath
+                            Else
+                                ' User selected the wrong folder
+                                MessageBox.Show(
+                                    "The selected folder is not 'mods_subscribed'. Please select the correct folder.",
+                                    "Incorrect Folder",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Warning
+                                )
+                                ' The loop will continue, giving the user another chance
+                            End If
+                        Else
+                            ' The user cancelled the selection dialog
+                            userWantsToBrowse = False
+                        End If
+                    End Using
+                Else
+                    ' The user chose not to browse manually
+                    userWantsToBrowse = False
+                End If
+            Loop
+
+            ' Handle the final result of the loop
+            If Not String.IsNullOrEmpty(selectedPath) Then
+                Return selectedPath ' Return the path if found
             Else
                 MessageBox.Show("Scan operation cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Return Nothing
+                Return Nothing ' Return Nothing if the user cancelled
             End If
         End If
     End Function
 
+    ' Scan the mods_subscribed directory for mods with custom assets
     Public Sub ScanFolders()
+
+        Debug.WriteLine("ScanFolders Started...")
         DisableCmbandBtns()
         allModFoldersCache.Clear()
 
+        ' Prevent triggering selection change events during the scan and population process
+        ModScanner.isRestoringSelections = True
+
         Dim modsDirectory As String = GetBaseScanDirectory()
         If String.IsNullOrEmpty(modsDirectory) OrElse Not Directory.Exists(modsDirectory) Then
-            MessageBox.Show("Could not determine a valid path for 'mods_subscribed'.", "Critical Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            DisableCmbandBtns()
-            Return
+            MessageBox.Show("Could not determine a valid path for 'mods_subscribed'." & vbCrLf & vbCrLf & "The program will be terminated.", "Critical Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            'DisableCmbandBtns()'
+
+            ' Close the main form
+            End
+
         End If
 
         For Each modFolder In Directory.GetDirectories(modsDirectory)
@@ -188,19 +319,25 @@ Module ModScanner
         AddEAICustomFolderToScan(allModFoldersCache)
 
         PopulateModsComboBox(allModFoldersCache)
+
         EnableCmbandBtns()
 
-        RestoreSelections()
+        RestoreSelections("Scan Folders")
+
+        ModScanner.isRestoringSelections = False
+
+        Debug.WriteLine("ScanFolders Finished...")
+
     End Sub
 
+    ' Scan the mods_subscribed directory for mods with custom assets, filtering only those with disabled assets
     Public Sub ScanFilteredFolders()
         DisableCmbandBtns()
 
         Dim modsDirectory As String = GetBaseScanDirectory()
         If String.IsNullOrEmpty(modsDirectory) OrElse Not Directory.Exists(modsDirectory) Then
             MessageBox.Show("Could not determine a valid path for 'mods_subscribed' for filtering.", "Critical Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            DisableCmbandBtns()
-            Return
+            End
         End If
 
         Frm_Main.Cmb_Mods.Items.Clear()
@@ -239,9 +376,11 @@ Module ModScanner
         PopulateModsComboBox(filteredMods)
         EnableCmbandBtns()
 
-        RestoreSelections()
+        RestoreSelections("ScanFilteredFolders")
+
     End Sub
 
+    ' Add the Extra Assets Importer custom folder to the scan list
     Private Sub AddEAICustomFolderToScan(ByRef modList As List(Of ModInfo))
         Dim eaiRootPath As String = CustomFiles.GetEAICustomFolderPath()
 
@@ -250,6 +389,7 @@ Module ModScanner
         End If
     End Sub
 
+    ' Populate Subscribed Mods ComboBox with mod names
     Public Sub PopulateModsComboBox(ByVal modsToLoad As List(Of ModInfo))
         Frm_Main.Cmb_Mods.Items.Clear()
         Frm_Main.Cmb_AssetType.Items.Clear()
@@ -269,12 +409,14 @@ Module ModScanner
         If Frm_Main.Cmb_Mods.Items.Count > 0 Then
             ' Handled by RestoreSelections()
         Else
+            ' if no mods found, disable all other controls
             Frm_Main.Cmb_AssetType.Enabled = False
             Frm_Main.Cmb_Cat.Enabled = False
             Frm_Main.Lst_Img.Enabled = False
         End If
     End Sub
 
+    ' Check if a mod has any disabled assets
     Private Function HasDisabledAssets(modRootPath As String) As Boolean
         Dim assetSubFolders As New List(Of String) From {"CustomDecals", "CustomSurfaces", "Surfaces", "CustomNetlanes"}
 
@@ -292,7 +434,7 @@ Module ModScanner
         Next
         Return False
     End Function
-
+    ' Generate the asset types based on the mod root path
     Public Sub LoadAssetTypes(modRootPath As String)
         Frm_Main.Cmb_AssetType.Items.Clear()
         Frm_Main.Cmb_Cat.Items.Clear()
@@ -342,6 +484,7 @@ Module ModScanner
         End If
     End Sub
 
+    ' Check if there are disabled assets in the given path
     Private Function HasDisabledAssetsInPath(pathToSearch As String, Optional isAssetTypePath As Boolean = False) As Boolean
         If Not Directory.Exists(pathToSearch) Then Return False
 
@@ -363,28 +506,76 @@ Module ModScanner
         Return False
     End Function
 
+    ' Generate the categories based on the asset type path
     Public Sub LoadCategories(assetTypePath As String)
+        ' Clear the ComboBox and the ListView
         Frm_Main.Cmb_Cat.Items.Clear()
         Frm_Main.Lst_Img.Items.Clear()
 
+        ' Check if the main directory exists. If not, log an error and exit.
         If Not Directory.Exists(assetTypePath) Then
             Console.WriteLine("Error: Asset type directory does not exist: " & assetTypePath)
             Return
         End If
 
+        ' A temporary list to hold categories before sorting.
         Dim categoriesToAdd As New List(Of ComboBoxItem)
 
-        For Each categoryFolder In Directory.GetDirectories(assetTypePath)
-            Dim categoryName As String = Path.GetFileName(categoryFolder)
-            If Not IsFilterDisabledOnlyActive OrElse HasDisabledAssetsInPath(categoryFolder, False) Then
-                categoriesToAdd.Add(New ComboBoxItem With {.Text = categoryName, .Value = categoryName})
+        '' Iterate through each subdirectory within the main asset type path.
+        'For Each categoryFolder In Directory.GetDirectories(assetTypePath)
+        '    Debug.WriteLine(assetTypePath)
+        '    ' Get the name of the category folder.
+        '    Dim categoryName As String = Path.GetFileName(categoryFolder)
+        '    Debug.WriteLine("Processing category: " & categoryFolder)
+        '    ' Check if the directory is not empty by looking for subdirectories or files.
+        '    ' This ensures we don't add empty categories to the ComboBox.
+        '    If Directory.GetDirectories(categoryFolder).Length > 0 OrElse Directory.GetFiles(categoryFolder).Length > 0 Then
+        '        ' Apply the existing filtering logic.
+        '        If Not IsFilterDisabledOnlyActive OrElse HasDisabledAssetsInPath(categoryFolder, False) Then
+        '            categoriesToAdd.Add(New ComboBoxItem With {.Text = categoryName, .Value = categoryName})
+        '        End If
+        '    End If
+
+        'Next
+
+        ' Define una lista temporal para almacenar los assetTypePaths a procesar
+        Dim assetTypePathsToProcess As New List(Of String) From {assetTypePath}
+
+        ' Si el assetTypePath contiene "\CustomSurfaces", también agrega la ruta cambiando a "\Surfaces"
+        If assetTypePath.IndexOf("\CustomSurfaces", StringComparison.OrdinalIgnoreCase) >= 0 Then
+            Dim surfacesPath As String = assetTypePath.Replace("\CustomSurfaces", "\Surfaces")
+            assetTypePathsToProcess.Add(surfacesPath)
+        End If
+
+        ' Procesa cada assetTypePath en la lista
+        For Each folderPath In assetTypePathsToProcess
+            If Directory.Exists(folderPath) Then
+                For Each categoryFolder In Directory.GetDirectories(folderPath)
+                    Dim categoryName As String = Path.GetFileName(categoryFolder)
+                    Debug.WriteLine("Processing category: " & categoryFolder)
+                    If Directory.GetDirectories(categoryFolder).Length > 0 OrElse Directory.GetFiles(categoryFolder).Length > 0 Then
+                        If Not IsFilterDisabledOnlyActive OrElse HasDisabledAssetsInPath(categoryFolder, False) Then
+                            categoriesToAdd.Add(New ComboBoxItem With {.Text = categoryName, .Value = categoryName})
+                        End If
+                    End If
+                Next
             End If
         Next
 
+        '' Sort the categories alphabetically and add them to the ComboBox.
+        'For Each item In categoriesToAdd.OrderBy(Function(x) x.Text)
+        '    Frm_Main.Cmb_Cat.Items.Add(item)
+        'Next
+
         For Each item In categoriesToAdd.OrderBy(Function(x) x.Text)
-            Frm_Main.Cmb_Cat.Items.Add(item)
+            Dim exists = Frm_Main.Cmb_Cat.Items.Cast(Of ComboBoxItem)().Any(Function(i) i.Text.Equals(item.Text, StringComparison.OrdinalIgnoreCase))
+            If Not exists Then
+                Frm_Main.Cmb_Cat.Items.Add(item)
+            End If
         Next
 
+        ' If there are categories, the selection is handled elsewhere.
+        ' If not, disable the ListView to indicate there's nothing to display.
         If Frm_Main.Cmb_Cat.Items.Count > 0 Then
             ' Handled by RestoreSelections()
         Else
@@ -392,55 +583,93 @@ Module ModScanner
         End If
     End Sub
 
+    ' Load assets into ListView based on the selected category path
     Public Sub LoadAssetsIntoListView(categoryPath As String)
 
-        LoadingStart()
+        LoadingStart("LoadAssetsIntoListView Started..." & categoryPath)
 
         Frm_Main.Lst_Img.Items.Clear()
         Frm_Main.Lst_Img.LargeImageList.Images.Clear()
 
+        Dim resizedOverlayIcon As New Bitmap(imageDictionary("LocalCopy"), New Size(32, 32))
+        Dim fallbackImage As Image = imageDictionary("ImageNotFound")
 
-        If Not Directory.Exists(categoryPath) Then
-            Console.WriteLine("Error: Category directory does not exist: " & categoryPath)
-            Return
+        Dim directoriesToScan As New List(Of String)
+        If categoryPath.Contains("CustomSurfaces") Then
+            directoriesToScan.Add(categoryPath)
+            Dim surfacesPath As String = categoryPath.Replace("CustomSurfaces", "Surfaces")
+            If Directory.Exists(surfacesPath) Then
+                directoriesToScan.Add(surfacesPath)
+            End If
+        Else
+            directoriesToScan.Add(categoryPath)
         End If
 
-        For Each assetFolder In Directory.GetDirectories(categoryPath)
-            Dim iconPath As String = Path.Combine(assetFolder, "icon.png")
-
-            If File.Exists(iconPath) Then
-                Try
-                    Using originalImage As Image = Image.FromFile(iconPath)
-                        If Not IsFilterDisabledOnlyActive OrElse Path.GetFileName(assetFolder).StartsWith("."c) Then
-                            Dim imgForImageList As New Bitmap(originalImage)
-
-                            Dim folderNameWithoutDot As String = Path.GetFileName(assetFolder).TrimStart(".")
-                            If Not Frm_Main.Lst_Img.LargeImageList.Images.ContainsKey(folderNameWithoutDot) Then
-                                Frm_Main.Lst_Img.LargeImageList.Images.Add(folderNameWithoutDot, imgForImageList)
-
-                            End If
-
-                            Dim item As New ListViewItem With {
-                                .Text = folderNameWithoutDot,
-                                .ImageKey = folderNameWithoutDot,
-                                .Tag = assetFolder
-                            }
-
-                            If Path.GetFileName(assetFolder).StartsWith("."c) Then
-                                item.ForeColor = Color.Red
-                            Else
-                                item.ForeColor = Color.Green
-                            End If
-
-                            Frm_Main.Lst_Img.Items.Add(item)
-                        End If
-                    End Using
-                Catch ex As Exception
-                    Console.WriteLine("Error loading icon.png or adding to ListView for " & assetFolder & ": " & ex.Message)
-                End Try
-            Else
-                Console.WriteLine("icon.png not found in " & assetFolder & ". Skipping this folder.")
+        For Each currentScanPath As String In directoriesToScan
+            If Not Directory.Exists(currentScanPath) Then
+                Console.WriteLine("Error: Category directory does not exist: " & currentScanPath)
+                Continue For
             End If
+
+            For Each assetFolder In Directory.GetDirectories(currentScanPath)
+                Dim iconPath As String = Path.Combine(assetFolder, "icon.png")
+                Dim imageToAdd As Image = Nothing
+
+                ' First, check if icon.png exists.
+                If File.Exists(iconPath) Then
+                    Try
+                        ' If it exists, load it safely.
+                        Using originalImage As Image = Image.FromFile(iconPath)
+                            imageToAdd = New Bitmap(originalImage)
+                        End Using
+                    Catch ex As Exception
+                        ' If loading fails for any reason, use the fallback image, as the asset is valid.
+                        imageToAdd = fallbackImage
+                    End Try
+                Else
+                    ' If icon.png doesn't exist, try to create it.
+                    CreateIconFromBaseMap(assetFolder)
+                    If File.Exists(iconPath) Then
+                        ' If it was created, load it safely.
+                        Try
+                            Using originalImage As Image = Image.FromFile(iconPath)
+                                imageToAdd = New Bitmap(originalImage)
+                            End Using
+                        Catch ex As Exception
+                            ' If loading the newly created icon fails, use the fallback image.
+                            imageToAdd = fallbackImage
+                        End Try
+                    Else
+                        ' If it doesn't exist and couldn't be created, imageToAdd remains Nothing, and the asset is skipped.
+                    End If
+                End If
+
+                ' Only add to the list if a valid image (original, created, or fallback) is available.
+                If imageToAdd IsNot Nothing Then
+                    If Not IsFilterDisabledOnlyActive OrElse Path.GetFileName(assetFolder).StartsWith("."c) Then
+                        Dim folderNameWithoutDot As String = Path.GetFileName(assetFolder).TrimStart("."c)
+                        Dim imgForImageList As New Bitmap(imageToAdd)
+
+                        If Not Frm_Main.Lst_Img.LargeImageList.Images.ContainsKey(folderNameWithoutDot) Then
+                            Frm_Main.Lst_Img.LargeImageList.Images.Add(folderNameWithoutDot, imgForImageList)
+                        End If
+
+                        Dim item As New ListViewItem With {
+                        .Text = folderNameWithoutDot,
+                        .ImageKey = folderNameWithoutDot,
+                        .Tag = assetFolder
+                    }
+
+                        If Path.GetFileName(assetFolder).StartsWith("."c) Then
+                            item.ForeColor = Color.Red
+                        Else
+                            item.ForeColor = Color.Green
+                        End If
+
+                        Frm_Main.Lst_Img.Items.Add(item)
+                    End If
+                End If
+            Next
         Next
 
         If Not String.IsNullOrEmpty(currentSelectedAssetTag) Then
@@ -454,10 +683,15 @@ Module ModScanner
             currentSelectedAssetTag = ""
         End If
 
-        LoadingStop()
+        'v1.4.6.3
+        If Frm_Main.Lst_Img.Items.Count = 0 Then
+            Frm_Main.Lst_Img.Enabled = False
+        End If
 
+        LoadingStop("LoadAssetsIntoListView Stopped.")
     End Sub
 
+    ' Handle asset desabling
     Public Sub DisableAsset(assetFullPath As String)
         If Directory.Exists(assetFullPath) Then
             Dim currentFolderName As String = Path.GetFileName(assetFullPath)
@@ -474,7 +708,7 @@ Module ModScanner
             MessageBox.Show("Asset folder does not exist.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End If
     End Sub
-
+    ' Handle asset enabling
     Public Sub EnableAsset(assetFullPath As String)
         If Directory.Exists(assetFullPath) Then
             Dim currentFolderName As String = Path.GetFileName(assetFullPath)
@@ -493,6 +727,7 @@ Module ModScanner
         End If
     End Sub
 
+    ' Store the current selections in the ComboBoxes and ListView
     Public Sub StoreCurrentSelections()
         If Frm_Main.Cmb_Mods.SelectedItem IsNot Nothing Then
             currentModPath = DirectCast(Frm_Main.Cmb_Mods.SelectedItem, ComboBoxItem).Value.ToString()
@@ -511,66 +746,137 @@ Module ModScanner
         Else
             currentCategoryPath = ""
         End If
+        Debug.WriteLine("Stored Mod: " & currentModPath)
+        Debug.WriteLine("Stored AssetType: " & currentAssetTypePath)
+        Debug.WriteLine("Stored Category: " & currentCategoryPath)
 
-        If Frm_Main.Lst_Img.SelectedItems.Count > 0 Then
-            currentSelectedAssetTag = Frm_Main.Lst_Img.SelectedItems(0).Tag.ToString()
-        Else
-            currentSelectedAssetTag = ""
-        End If
+        'If Frm_Main.Lst_Img.SelectedItems.Count > 0 Then
+        '    currentSelectedAssetTag = Frm_Main.Lst_Img.SelectedItems(0).Tag.ToString()
+        'Else
+        '    currentSelectedAssetTag = ""
+        'End If
     End Sub
 
-    Public Sub RestoreSelections()
+    ' Restore the selections in the ComboBoxes and ListView based on stored values
+    Public Sub RestoreSelections(ByVal callerFunctionName As String)
+        ' Restore Cmb_Mods selection.
+        ' Only proceed if a stored value exists.
+        LoadingStart("RestoreSelections Started..." & callerFunctionName)
+
         If Not String.IsNullOrEmpty(currentModPath) Then
+            Debug.WriteLine("Restoring Mod Path: " & currentModPath)
             Dim found As Boolean = False
             For i As Integer = 0 To Frm_Main.Cmb_Mods.Items.Count - 1
                 Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Mods.Items(i), ComboBoxItem)
+                ' Check if the item's value matches the stored path (case-insensitive).
                 If item.Value.ToString().Equals(currentModPath, StringComparison.OrdinalIgnoreCase) Then
                     Frm_Main.Cmb_Mods.SelectedIndex = i
                     found = True
-                    Exit For
+                    Exit For ' Exit the loop once the item is found.
                 End If
             Next
-            If Not found AndAlso Frm_Main.Cmb_Mods.Items.Count > 0 Then
-                Frm_Main.Cmb_Mods.SelectedIndex = 0
+        Else
+            If Frm_Main.Cmb_Mods.Items.Count > 0 Then
+                Frm_Main.Cmb_Mods.SelectedIndex = 0 ' First Item
             End If
-        ElseIf Frm_Main.Cmb_Mods.Items.Count > 0 Then
-            Frm_Main.Cmb_Mods.SelectedIndex = 0
         End If
 
+        ' Restore Cmb_AssetType selection.
+        ' Only proceed if a stored value exists.
         If Not String.IsNullOrEmpty(currentAssetTypePath) Then
+            Debug.WriteLine("Restoring Asset Type Path: " & currentAssetTypePath)
             Dim found As Boolean = False
             For i As Integer = 0 To Frm_Main.Cmb_AssetType.Items.Count - 1
                 Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_AssetType.Items(i), ComboBoxItem)
+                ' Check if the item's value matches the stored path (case-insensitive).
                 If item.Value.ToString().Equals(currentAssetTypePath, StringComparison.OrdinalIgnoreCase) Then
                     Frm_Main.Cmb_AssetType.SelectedIndex = i
                     found = True
                     Exit For
                 End If
             Next
-            If Not found AndAlso Frm_Main.Cmb_AssetType.Items.Count > 0 Then
-                Frm_Main.Cmb_AssetType.SelectedIndex = 0
+        Else
+            ' If no stored value exists, ensure the ComboBox is enabled but no selection is made.
+            If Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+                Frm_Main.Cmb_AssetType.SelectedIndex = 0 ' First Item
             End If
-        ElseIf Frm_Main.Cmb_AssetType.Items.Count > 0 Then
-            Frm_Main.Cmb_AssetType.SelectedIndex = 0
         End If
 
+        ' Restore Cmb_Cat selection.
+        ' Only proceed if a stored value exists.
         If Not String.IsNullOrEmpty(currentCategoryPath) Then
+            Debug.WriteLine("Restoring Category Path: " & currentCategoryPath)
             Dim found As Boolean = False
             For i As Integer = 0 To Frm_Main.Cmb_Cat.Items.Count - 1
                 Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Cat.Items(i), ComboBoxItem)
+                ' Check if the item's value matches the stored path (case-insensitive).
                 If item.Value.ToString().Equals(currentCategoryPath, StringComparison.OrdinalIgnoreCase) Then
                     Frm_Main.Cmb_Cat.SelectedIndex = i
                     found = True
                     Exit For
                 End If
             Next
-            If Not found AndAlso Frm_Main.Cmb_Cat.Items.Count > 0 Then
-                Frm_Main.Cmb_Cat.SelectedIndex = 0
+        Else
+            If Frm_Main.Cmb_Cat.Items.Count > 0 Then
+                Frm_Main.Cmb_Cat.SelectedIndex = 0 ' First Item
             End If
-        ElseIf Frm_Main.Cmb_Cat.Items.Count > 0 Then
-            Frm_Main.Cmb_Cat.SelectedIndex = 0
         End If
+
+        LoadingStop("RestoreSelections Stopped." & callerFunctionName)
+
     End Sub
+    'Public Sub RestoreSelections()
+    '    If Not String.IsNullOrEmpty(currentModPath) Then
+    '        Dim found As Boolean = False
+    '        For i As Integer = 0 To Frm_Main.Cmb_Mods.Items.Count - 1
+    '            Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Mods.Items(i), ComboBoxItem)
+    '            If item.Value.ToString().Equals(currentModPath, StringComparison.OrdinalIgnoreCase) Then
+    '                Frm_Main.Cmb_Mods.SelectedIndex = i
+    '                found = True
+    '                Exit For
+    '            End If
+    '        Next
+    '        If Not found AndAlso Frm_Main.Cmb_Mods.Items.Count > 0 Then
+    '            Frm_Main.Cmb_Mods.SelectedIndex = 0
+    '        End If
+    '    ElseIf Frm_Main.Cmb_Mods.Items.Count > 0 Then
+    '        Frm_Main.Cmb_Mods.SelectedIndex = 0
+    '    End If
+
+    '    If Not String.IsNullOrEmpty(currentAssetTypePath) Then
+    '        Dim found As Boolean = False
+    '        For i As Integer = 0 To Frm_Main.Cmb_AssetType.Items.Count - 1
+    '            Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_AssetType.Items(i), ComboBoxItem)
+    '            If item.Value.ToString().Equals(currentAssetTypePath, StringComparison.OrdinalIgnoreCase) Then
+    '                Frm_Main.Cmb_AssetType.SelectedIndex = i
+    '                found = True
+    '                Exit For
+    '            End If
+    '        Next
+    '        If Not found AndAlso Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+    '            Frm_Main.Cmb_AssetType.SelectedIndex = 0
+    '        End If
+    '    ElseIf Frm_Main.Cmb_AssetType.Items.Count > 0 Then
+    '        Frm_Main.Cmb_AssetType.SelectedIndex = 0
+    '    End If
+
+    '    If Not String.IsNullOrEmpty(currentCategoryPath) Then
+    '        Dim found As Boolean = False
+    '        For i As Integer = 0 To Frm_Main.Cmb_Cat.Items.Count - 1
+    '            Dim item As ComboBoxItem = DirectCast(Frm_Main.Cmb_Cat.Items(i), ComboBoxItem)
+    '            If item.Value.ToString().Equals(currentCategoryPath, StringComparison.OrdinalIgnoreCase) Then
+    '                Frm_Main.Cmb_Cat.SelectedIndex = i
+    '                found = True
+    '                Exit For
+    '            End If
+    '        Next
+    '        If Not found AndAlso Frm_Main.Cmb_Cat.Items.Count > 0 Then
+    '            Frm_Main.Cmb_Cat.SelectedIndex = 0
+    '        End If
+    '    ElseIf Frm_Main.Cmb_Cat.Items.Count > 0 Then
+    '        Frm_Main.Cmb_Cat.SelectedIndex = 0
+    '    End If
+    'End Sub
 
     ' Function to calculate statistics for a given mod path
     Public Function CalculateModStatistics(modRootPath As String) As ModStatistics
@@ -587,7 +893,7 @@ Module ModScanner
                 stats.ModAuthor = If(jsonObject.ContainsKey("Author"), jsonObject.Value(Of String)("Author"), "N/A")
                 stats.ModID = If(jsonObject.ContainsKey("Id"), jsonObject.Value(Of String)("Id"), "N/A")
             Catch ex As Exception
-                Console.WriteLine("Error reading metadata for stats in " & modRootPath & ": " & ex.Message)
+                Console.WriteLine("Error reading metadata For stats In " & modRootPath & ": " & ex.Message)
                 stats.modVersion = "Error"
                 stats.ModAuthor = "Error"
                 stats.ModID = "Error"
@@ -654,7 +960,7 @@ Module ModScanner
         Return totalSize
     End Function
 
-    ' Load asset types from all mods combined
+    ' Load asset types from all mods combined when EAI Sorting enabled
     Public Sub LoadAssetTypesFromAllMods()
         Frm_Main.Cmb_AssetType.Items.Clear()
         Frm_Main.Cmb_Cat.Items.Clear()
@@ -674,7 +980,7 @@ Module ModScanner
                 assetTypesToAdd.Add("CustomNetlanes")
             End If
 
-            ' Handle both CustomSurfaces and Surfaces as the same type
+            ' Handle both CustomSurfaces and Surfaces as the same type ORIGINAL
             If Directory.Exists(Path.Combine(modRootPath, "CustomSurfaces")) OrElse
            Directory.Exists(Path.Combine(modRootPath, "Surfaces")) Then
                 assetTypesToAdd.Add("Surfaces") ' Always use "Surfaces" as the unified type
@@ -686,6 +992,7 @@ Module ModScanner
             Dim displayName As String = If(assetType = "CustomDecals", "Decals",
                                    If(assetType = "CustomNetlanes", "Netlanes", "Surfaces"))
             Frm_Main.Cmb_AssetType.Items.Add(New ComboBoxItem With {.Text = displayName, .Value = assetType})
+
         Next
 
         If Frm_Main.Cmb_AssetType.Items.Count > 0 Then
@@ -693,6 +1000,7 @@ Module ModScanner
         End If
     End Sub
 
+    ' Load categories from all mods combined when EAI Sorting enabled
     Public Sub LoadCategoriesFromAllMods(assetType As String)
         Frm_Main.Cmb_Cat.Items.Clear()
         Frm_Main.Lst_Img.Items.Clear()
@@ -735,10 +1043,12 @@ Module ModScanner
         If Frm_Main.Cmb_Cat.Items.Count > 0 Then
             Frm_Main.Cmb_Cat.SelectedIndex = 0
         End If
+
     End Sub
 
+    ' Load Assets from all mods when EAI Sorting enabled to ListView
     Public Sub LoadAssetsFromAllMods(assetType As String, category As String)
-        LoadingStart()
+        LoadingStart("LoadAssetsFromAllMods Started by: " & assetType & category)
 
         Frm_Main.Lst_Img.Items.Clear()
         Frm_Main.Lst_Img.LargeImageList.Images.Clear()
@@ -748,15 +1058,17 @@ Module ModScanner
             Dim categoryPath As String = ""
 
             ' Handle the unified Surfaces type - check both possible folder names
-            If assetType = "Surfaces" Then
+            If assetType = ("Surfaces") Then
                 Dim customSurfacesPath As String = Path.Combine(modInfo.RootPath, "CustomSurfaces", category)
                 Dim surfacesPath As String = Path.Combine(modInfo.RootPath, "Surfaces", category)
 
                 If Directory.Exists(customSurfacesPath) Then
                     LoadAssetsFromPath(customSurfacesPath, modInfo.DisplayName)
+                    'Debug.WriteLine("Loading from CustomSurfaces path: " & customSurfacesPath)
                 End If
                 If Directory.Exists(surfacesPath) Then
                     LoadAssetsFromPath(surfacesPath, modInfo.DisplayName)
+                    'Debug.WriteLine("Loading from Surfaces path: " & surfacesPath)
                 End If
             Else
                 categoryPath = Path.Combine(modInfo.RootPath, assetType, category)
@@ -764,49 +1076,128 @@ Module ModScanner
                     LoadAssetsFromPath(categoryPath, modInfo.DisplayName)
                 End If
             End If
+            'Debug.WriteLine("Asset loaded:" & categoryPath)
         Next
 
-        LoadingStop()
+        LoadingStop("LoadAssetsFromAllMods Stopped.")
+
     End Sub
 
+    ' Load Assets from path when EAI Sorting enabled
     Private Sub LoadAssetsFromPath(categoryPath As String, modName As String)
-        For Each assetFolder In Directory.GetDirectories(categoryPath)
-            Dim iconPath As String = Path.Combine(assetFolder, "icon.png")
 
+        Dim resizedOverlayIcon As New Bitmap(imageDictionary("LocalCopy"), New Size(32, 32))
+        Dim fallbackImage As Image = imageDictionary("ImageNotFound")
+
+        For Each assetFolder In Directory.GetDirectories(categoryPath)
+
+            Dim iconPath As String = Path.Combine(assetFolder, "icon.png")
+            Dim imageToAdd As Image = Nothing
+
+            ' First, check if icon.png exists.
             If File.Exists(iconPath) Then
                 Try
                     Using originalImage As Image = Image.FromFile(iconPath)
-                        If Not IsFilterDisabledOnlyActive OrElse Path.GetFileName(assetFolder).StartsWith("."c) Then
-                            Dim folderNameWithoutDot As String = Path.GetFileName(assetFolder).TrimStart(".")
-                            Dim uniqueKey As String = $"{modName}_{folderNameWithoutDot}"
-
-                            If Not Frm_Main.Lst_Img.LargeImageList.Images.ContainsKey(uniqueKey) Then
-                                Dim imgForImageList As New Bitmap(originalImage)
-                                Frm_Main.Lst_Img.LargeImageList.Images.Add(uniqueKey, imgForImageList)
-                            End If
-
-                            'Dim displayText As String = $"{folderNameWithoutDot} ({modName})"
-                            Dim displayText As String = $"{folderNameWithoutDot}"
-                            Dim item As New ListViewItem With {
-                            .Text = displayText,
-                            .ImageKey = uniqueKey,
-                            .Tag = assetFolder
-                        }
-
-                            If Path.GetFileName(assetFolder).StartsWith("."c) Then
-                                item.ForeColor = Color.Red
-                            Else
-                                item.ForeColor = Color.Green
-                            End If
-
-                            Frm_Main.Lst_Img.Items.Add(item)
-                        End If
+                        imageToAdd = New Bitmap(originalImage)
                     End Using
                 Catch ex As Exception
-                    Console.WriteLine($"Error loading icon for {assetFolder}: {ex.Message}")
+                    ' If loading fails for any reason, use the fallback image, as the asset is valid.
+                    imageToAdd = fallbackImage
                 End Try
+            Else
+                ' If icon.png doesn't exist, try to create it.
+                CreateIconFromBaseMap(assetFolder)
+                If File.Exists(iconPath) Then
+                    ' If it was created, load it safely.
+                    Try
+                        Using originalImage As Image = Image.FromFile(iconPath)
+                            imageToAdd = New Bitmap(originalImage)
+                        End Using
+                    Catch ex As Exception
+                        ' If loading the newly created icon fails, use the fallback image.
+                        imageToAdd = fallbackImage
+                    End Try
+                Else
+                    ' If it doesn't exist and couldn't be created, imageToAdd remains Nothing, and the asset is skipped.
+                End If
+            End If
+
+            ' Only proceed if a valid image is available to add.
+            If imageToAdd IsNot Nothing Then
+                If Not IsFilterDisabledOnlyActive OrElse Path.GetFileName(assetFolder).StartsWith("."c) Then
+                    Dim folderNameWithoutDot As String = Path.GetFileName(assetFolder).TrimStart("."c)
+                    Dim uniqueKey As String = $"{modName}_{folderNameWithoutDot}"
+
+                    Dim imgForImageList As New Bitmap(imageToAdd)
+
+                    If iconPath.Contains("\ExtraAssetsImporter\") Then
+                        Using g As Graphics = Graphics.FromImage(imgForImageList)
+                            g.DrawImage(resizedOverlayIcon, imgForImageList.Width - resizedOverlayIcon.Width, imgForImageList.Height - resizedOverlayIcon.Height, resizedOverlayIcon.Width, resizedOverlayIcon.Height)
+                        End Using
+                    End If
+
+                    If Not Frm_Main.Lst_Img.LargeImageList.Images.ContainsKey(uniqueKey) Then
+                        Frm_Main.Lst_Img.LargeImageList.Images.Add(uniqueKey, imgForImageList)
+                    End If
+
+                    Dim displayText As String = $"{folderNameWithoutDot}"
+                    Dim item As New ListViewItem With {
+                    .Text = displayText,
+                    .ImageKey = uniqueKey,
+                    .Tag = assetFolder
+                }
+
+                    If Path.GetFileName(assetFolder).StartsWith("."c) Then
+                        item.ForeColor = Color.Red
+                    Else
+                        item.ForeColor = Color.Green
+                    End If
+
+                    Frm_Main.Lst_Img.Items.Add(item)
+                End If
             End If
         Next
+    End Sub
+
+    'Function to create "icon.png" in a given asset folder if it doesn't exist
+    Public Sub CreateIconFromBaseMap(ByVal targetDirectory As String)
+        ' Define the name of the icon file we want to create
+        Dim iconPath As String = Path.Combine(targetDirectory, "icon.png")
+
+        ' Check if the icon.png file already exists
+        If File.Exists(iconPath) Then
+            Return ' Exit the function if the icon already exists
+        End If
+
+        ' Search for the base file that contains "_BaseColorMap" in its name
+        Dim baseMapPath As String = ""
+        Dim files As String() = Directory.GetFiles(targetDirectory, "*_BaseColorMap.png")
+
+        ' If a matching file is found, use it as the base
+        If files.Length > 0 Then
+            baseMapPath = files(0)
+        End If
+
+        ' If no base file was found, do nothing more and exit.
+        ' Your program's logic should handle displaying the "ImageNotFound" image when loading the ListView.
+        If String.IsNullOrEmpty(baseMapPath) Then
+            Return
+        End If
+
+        ' Create the icon from the base image
+        Try
+            Using imageFactory As New ImageFactory(preserveExifData:=True)
+                imageFactory.
+                Load(baseMapPath). ' Loads the base image
+                Resize(New Size(128, 128)). ' Resizes to 128x128 pixels
+                Format(New PngFormat()). ' Sets the output format to PNG
+                Save(iconPath) ' Saves the image as icon.png
+            End Using
+        Catch ex As Exception
+            ' You can add some error logging here if you wish
+            Console.WriteLine($"Error creating icon.png: {ex.Message}")
+        End Try
+
     End Sub
 
     ' Unified refresh function that handles both normal and EAI modes
@@ -850,11 +1241,13 @@ Module ModScanner
         Frm_Main.Cmb_Mods.Items.Add(New ComboBoxItem With {.Text = "EAI Sorting", .Value = ""})
         Frm_Main.Cmb_Mods.SelectedIndex = 0
         Frm_Main.Cmb_Mods.Enabled = False
+        Frm_Main.Btn_GoLocal.Enabled = False
     End Sub
 
     ' Restore normal mode display (repopulate mods and enable combo)
     Public Sub RestoreNormalModeDisplay()
         Frm_Main.Cmb_Mods.Enabled = True
+        Frm_Main.Btn_GoLocal.Enabled = True
         PopulateModsComboBox(allModFoldersCache) ' Restore original mod list
     End Sub
 
@@ -874,11 +1267,15 @@ Module ModScanner
 
             ' If stored selection not found, select first item
             If Not found AndAlso Frm_Main.Cmb_Mods.Items.Count > 0 Then
-                Frm_Main.Cmb_Mods.SelectedIndex = 0
+                Frm_Main.Cmb_Mods.SelectedIndex = 0 ' Select the first mod by default
+                Frm_Main.Cmb_AssetType.SelectedIndex = 0 ' Select the first asset type by default
+                Frm_Main.Cmb_Cat.SelectedIndex = 0 ' Select the first category by default
             End If
         ElseIf Frm_Main.Cmb_Mods.Items.Count > 0 Then
             ' If no stored selection, select first item
-            Frm_Main.Cmb_Mods.SelectedIndex = 0
+            Frm_Main.Cmb_Mods.SelectedIndex = 0 ' Select the first mod by default
+            Frm_Main.Cmb_AssetType.SelectedIndex = 0 ' Select the first asset type by default
+            Frm_Main.Cmb_Cat.SelectedIndex = 0 ' Select the first category by default
         End If
 
         ' Clear stored selection
@@ -929,18 +1326,33 @@ Module ModScanner
             RefreshModsCache()
             RefreshCurrentView()
         Else
+            isRestoringSelections = True
             ' Normal Mode: Standard rescan
             StoreCurrentSelections()
+            isFirstLoad = True
+
             If IsFilterDisabledOnlyActive Then
                 ScanFilteredFolders()
             Else
+
+                ' Force to non selection of combo boxes
+                Frm_Main.Cmb_Mods.SelectedIndex = -1
+                Frm_Main.Cmb_AssetType.SelectedIndex = -1
+                Frm_Main.Cmb_Cat.SelectedIndex = -1
+
+                isFirstLoad = False
+
                 ScanFolders()
+
+
             End If
-            RestoreSelections()
+
+            'RestoreSelections("Rescan And Refresh")
+            isRestoringSelections = False
         End If
     End Sub
 
-    ' *** LOAD IMAGES FORM DATAFILES FOLDER ***
+    ' *** LOAD Icon images FORM DATAFILES FOLDER ***
     Public Sub LoadImagesFromDataFiles()
         Dim dataFilesPath As String = Path.Combine(Application.StartupPath, "DataFiles")
 
@@ -983,9 +1395,21 @@ Module ModScanner
             Frm_Main.MenuItem_EditLocalAsset.Image = imageDictionary("Edit")
             Frm_Main.MenuItem_OpenLocation.Image = imageDictionary("OpenExplorer")
             Frm_Main.MenuItem_RenameLocalAsset.Image = imageDictionary("Rename")
+            Frm_Main.Btn_GoLocal.Image = imageDictionary("GoLocal")
 
+            Frm_Main.MenuItem_AssetProperties.Image = imageDictionary("TextFile")
+            Frm_Main.Ctx_ChangeCat.Image = imageDictionary("Category")
+            Frm_Main.Ctx_BulkOperations.Image = imageDictionary("Bulk")
+
+            Frm_Main.Ctx_Bulk_DisableAssets.Image = imageDictionary("Disable")
+            Frm_Main.Ctx_Bulk_EnableAssets.Image = imageDictionary("Enable")
+            Frm_Main.Ctx_Bulk_DeleteAssets.Image = imageDictionary("Delete")
+            Frm_Main.Ctx_Bulk_SetUiPriority.Image = imageDictionary("Prop_UiPriority")
+            Frm_Main.Ctx_Bulk_SetDrawOrder.Image = imageDictionary("Prop_DrawOrder")
+            Frm_Main.Ctx_Bulk_SetDLM.Image = imageDictionary("Prop_DLM")
 
             Frm_Main.Msm_Close.Image = imageDictionary("Close")
+
             Frm_Main.Msm_FiltersDisabledOnly.Image = imageDictionary("Filter")
 
             Frm_Main.Btn_EnableSelectedItems.Image = imageDictionary("Enable")

@@ -1,10 +1,12 @@
 ﻿Imports System.IO
 Imports Microsoft.VisualBasic.FileIO ' For FileSystem.CopyDirectory
-Imports Microsoft.VisualBasic.Interaction ' For InputBox
-Imports System.Text.RegularExpressions ' For Regex
+Imports Microsoft.VisualBasic.Interaction
 
 Module CustomFiles
 
+    Public ChangingCatAssetPath As String = ""
+    Public ChangingCatAssetName As String = ""
+    Public ChangingCatAssetNew As String = "" ' This variable is used to store the new asset category name after changing the category
     ' Function to get the EAI custom folder path
     Public Function GetEAICustomFolderPath() As String
         Dim defaultLocalLowPath As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
@@ -31,6 +33,25 @@ Module CustomFiles
     ' Copies an asset directory to the ExtraAssetsImporter folder
     ' Returns True if copy is successful, False otherwise (including user cancellation)
     Public Function CreateLocalCopy(sourceAssetPath As String, assetType As String, categoryName As String) As Boolean
+
+
+        ' Handle the unified Surfaces type - check both possible folder names
+        If assetType = "Surfaces" Then
+            Dim customSurfacesPath As String = Path.Combine(sourceAssetPath, "CustomSurfaces")
+            Dim surfacesPath As String = Path.Combine(sourceAssetPath, "Surfaces")
+
+            If customSurfacesPath.Contains("\CustomSurfaces\") Then
+                assetType = "CustomSurfaces" ' Use the CustomSurfaces folder
+            Else
+                assetType = "Surfaces" ' Use the EAI new surfaces folder
+            End If
+
+            'MsgBox("Asset Type: " & assetType) ' Debugging line to check the asset type
+
+        End If
+
+        'CustomMessageBox.ShowCustom("Copy from: " & vbCrLf & vbCrLf & sourceAssetPath & vbCrLf & vbCrLf & "Asset Typer Folder: " & assetType & vbCrLf & vbCrLf & "Asset Category Folder: " & categoryName)
+
         Dim destinationBasePath As String = GetEAICustomFolderPath()
         Dim destAssetTypePath As String = Path.Combine(destinationBasePath, assetType)
         Dim destCategoryPath As String = Path.Combine(destAssetTypePath, categoryName)
@@ -85,8 +106,9 @@ Module CustomFiles
             End If
         Loop While Not isValidInput AndAlso Not userCancelled
 
+        ' Handle user cancellation
         If userCancelled Then
-            MessageBox.Show("Copy operation cancelled by the user.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            '    MessageBox.Show("Copy operation cancelled by the user.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
             Return False
         End If
 
@@ -95,7 +117,11 @@ Module CustomFiles
         ' Perform the directory copy
         Try
             FileSystem.CopyDirectory(sourceAssetPath, finalDestPath, True) ' True to overwrite if destination exists, though we checked.
-            MessageBox.Show("Asset '" & originalAssetName & "' copied successfully to '" & finalDestPath & "'.", "Copy Successful", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            'MessageBox.Show("Asset '" & originalAssetName & "' copied successfully to '" & finalDestPath & "'.", "Copy Successful", MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+            'Using CustomMessageBox to show the message v1.4.3 r2
+            CustomMessageBox.ShowCustom("Asset '" & originalAssetName & "' copied successfully to:" & vbCrLf & vbCrLf & finalDestPath & vbCrLf & vbCrLf & "with the name '" & newAssetName & "'", "Copy Successful", MessageBoxButtons.OK, MessageBoxIcon.None, 640, 240)
+
             Return True
         Catch ex As Exception
             MessageBox.Show("Error copying asset: " & ex.Message, "Copy Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -105,7 +131,7 @@ Module CustomFiles
 
     ' Deletes an asset directory from the ExtraAssetsImporter folder
     ' Returns True if deletion is successful, False otherwise
-    Public Function DeleteLocalAsset(assetPath As String) As Boolean
+    Public Function DeleteLocalAsset(assetPath As String) As Boolean 'v1.4.3 r3 fixed not returning focus to main form after deletion
         Dim eaiPath As String = GetEAICustomFolderPath()
 
         ' Ensure the asset is indeed within the EAI folder before attempting deletion
@@ -121,23 +147,29 @@ Module CustomFiles
 
         Dim assetName As String = Path.GetFileName(assetPath)
 
-        ' Change icon to Warning
+        ' Ask for confirmation before deletion
         If MessageBox.Show("Are you sure you want to permanently delete the local asset '" & assetName & "'?", "Confirm Deletion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) = DialogResult.Yes Then
             Try
                 FileSystem.DeleteDirectory(assetPath, UIOption.AllDialogs, RecycleOption.SendToRecycleBin, UICancelOption.ThrowException)
                 MessageBox.Show("Asset '" & assetName & "' deleted successfully.", "Deletion Successful", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Frm_Main.Focus() ' Ensure the main form is focused after the operation
                 Return True
             Catch ex As OperationCanceledException
                 MessageBox.Show("Deletion operation cancelled by the user.", "Operation Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Frm_Main.Focus() ' Ensure the main form is focused after the operation
                 Return False
             Catch ex As Exception
                 MessageBox.Show("Error deleting asset: " & ex.Message, "Deletion Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Frm_Main.Focus() ' Ensure the main form is focused after the operation
                 Return False
             End Try
         Else
             MessageBox.Show("Deletion operation cancelled.", "Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Frm_Main.Focus() ' Ensure the main form is focused after the operation
             Return False
         End If
+
+        Frm_Main.Focus() ' Ensure the main form is focused after the operation
     End Function
 
     ' Renames a local asset directory within the ExtraAssetsImporter folder
